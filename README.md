@@ -1,4 +1,7 @@
 ![furina-daily](https://socialify.git.ci/anyliew/furina-daily/image?custom_description=%E4%B8%80%E6%AC%BE%E4%B8%BA+Yunzai-Bot+%E5%AE%9A%E5%88%B6%E7%9A%84%E4%BA%8C%E6%AC%A1%E5%85%83%E6%9E%AB%E4%B8%B9%E6%B0%B4%E7%A5%9E%E8%8A%99%E5%AE%81%E5%A8%9C%E9%A3%8E%E6%A0%BC%E6%97%A5%E6%8A%A5%E6%8F%92%E4%BB%B6&custom_language=JavaScript&description=1&forks=1&issues=1&language=1&name=1&owner=1&pulls=1&stargazers=1&theme=Light)
+
+![芙芙日报](https://upload-bbs.miyoushe.com/upload/2026/05/03/365152535/a65f9320ab2d369b16745c20633b5600_3131922939226961435.jpg)
+
 # 芙芙日报 · Furina Daily
 
 每日自动生成精美日报图片，支持多群推送、锅巴可视化配置、一键更新等。
@@ -13,6 +16,11 @@
 ### 日报帮助 效果图
 <details><summary>🖼帮助</summary><p>
 <a><img src="./docs/images/help.png"></a>
+</details>
+
+### 锅巴配置 效果图
+<details><summary>🖼锅巴</summary><p>
+<a><img src="./docs/images/guoba.png"></a>
 </details>
 
 ## ✨ 主要功能
