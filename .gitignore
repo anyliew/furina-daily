@@ -1,0 +1,9 @@
+data/*
+/config/config
+!data/cfg_default.json
+.node_modules
+node_modules
+pnpm-lock.yaml
+temp/
+package-lock.json
+.package-lock.json

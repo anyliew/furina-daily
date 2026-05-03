@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+{% include "partials/head.html" %}
+<body>
+<div class="container">
+  {% include "partials/header.html" %}
+  <div class="two-columns">
+    {% include "partials/moyu.html" %}
+    {% include "partials/bilibili.html" %}
+  </div>
+  <div class="single-column">
+    {% include "partials/douyin.html" %}
+    {% include "partials/news.html" %}
+  </div>
+  {% include "partials/footer.html" %}
+</div>
+<script>
+  (function() {
+    console.log('🔍 开始检测样式与字体加载状态...');
+    const testDiv = document.createElement('div');
+    testDiv.style.display = 'none';
+    testDiv.className = 'module-title';
+    document.body.appendChild(testDiv);
+    
+    setTimeout(() => {
+      const computed = window.getComputedStyle(testDiv);
+      const borderColor = computed.getPropertyValue('border-bottom-color');
+      console.log('📐 模块标题底部边框颜色 (应为冰蓝色):', borderColor);
+      
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          const testString = '测试文字 Test';
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          ctx.font = '72px "GWMSansUI", sans-serif';
+          const withFont = ctx.measureText(testString).width;
+          
+          ctx.font = '72px sans-serif';
+          const withoutFont = ctx.measureText(testString).width;
+          
+          if (Math.abs(withFont - withoutFont) > 1) {
+            console.log('✅ GWMSansUI 字体已成功加载并应用！宽度差:', Math.round(withFont - withoutFont));
+          } else {
+            console.warn('⚠️ GWMSansUI 字体可能未加载或回退到默认字体，宽度差:', withFont - withoutFont);
+          }
+          
+          const bodyFont = window.getComputedStyle(document.body).fontFamily;
+          console.log('📝 body 实际应用的 font-family:', bodyFont);
+        });
+      }
+      document.body.removeChild(testDiv);
+    }, 500);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "furina-daily",
+  "version": "2.0.0",
+  "description": "芙芙日报 - 二次元风格日报图片生成工具",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.16.0",
+    "date-fns": "^4.1.0",
+    "js-yaml": "^4.1.1",
+    "lunar-javascript": "^1.7.7",
+    "node-schedule": "^2.1.1",
+    "nunjucks": "^3.2.4",
+    "sharp": "^0.34.5"
+  }
+}

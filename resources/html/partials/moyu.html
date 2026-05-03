@@ -1,0 +1,42 @@
+<div class="module">
+  <div class="module-title">
+    <span class="icon"><img src="../svg/calendar.svg" alt=""></span>
+    <span>摸鱼日历</span>
+  </div>
+  <div class="calendar-header">
+    <div class="main-date">📆 {{ moyuData.date }} {{ moyuData.weekday }}</div>
+    <div class="lunar-detail">🌙 {{ moyuData.lunar }} · {{ moyuData.zodiacYear }}</div>
+    {% if moyuData.holidayStatus %}
+    <div class="holiday-badge">
+      🎉 恭喜！正处于【{{ moyuData.holidayStatus }}】假期 · 还剩 {{ moyuData.holidayRemaining }} 天
+    </div>
+    {% endif %}
+    {% if moyuData.lunarFestival %}
+    <div style="margin-top: 8px; font-size: 16px; color: #1a4b63;">🏮 农历节日：{{ moyuData.lunarFestival }}</div>
+    {% endif %}
+  </div>
+  <div style="margin-bottom: 14px;">
+    <div style="font-weight: 600; margin-bottom: 10px; color: #0a2a3b; letter-spacing: 1px; font-size: 19px;">⏳ 摸鱼倒计时</div>
+    <ul class="countdown-list">
+      {% for item in moyuData.countdowns %}
+      <li class="countdown-item {% if item.isHighlight %}highlight{% endif %}">
+        <span class="countdown-name">
+          {% if item.special %}📅 距离【{{ item.name }}】{% else %}🎯 距离【{{ item.name }}】{% endif %}
+        </span>
+        <span class="countdown-days">
+          {% if item.special %}{{ item.special }}{% else %}还剩 {{ item.days }} 天{% endif %}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% if moyuData.nextPayday %}
+  <div class="next-payday-box">
+    <div style="font-weight: 700; font-size: 20px; color: #b8860b;">🎭 下一个带薪摸鱼日</div>
+    <div>🎊 节日：{{ moyuData.nextPayday.name }}</div>
+    <div>📅 日期：{{ moyuData.nextPayday.date }}</div>
+    {% if moyuData.nextPayday.duration %}<div>⏱️ 时长：{{ moyuData.nextPayday.duration }} 天</div>{% endif %}
+    {% if moyuData.nextPayday.noWorkAdjust %}<div>💼 调休：无需调休，优雅摸鱼！</div>{% endif %}
+  </div>
+  {% endif %}
+</div>

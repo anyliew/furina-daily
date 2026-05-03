@@ -1,0 +1,22 @@
+<div class="content-module">
+  <div class="module-title">
+    <span class="icon"><img src="../svg/news.svg" alt=""></span>
+    <span>60S 读世界</span>
+  </div>
+  <ul class="news-list">
+    {% for news in worldNews %}
+    <li class="news-item"><span class="news-bullet">●</span><span>{{ news }}</span></li>
+    {% endfor %}
+  </ul>
+</div>
+<div class="content-module">
+  <div class="module-title">
+    <span class="icon"><img src="../svg/it.svg" alt=""></span>
+    <span>IT 资讯</span>
+  </div>
+  <ul class="news-list">
+    {% for news in itNews %}
+    <li class="news-item"><span class="news-bullet">●</span><span>{{ news }}</span></li>
+    {% endfor %}
+  </ul>
+</div>

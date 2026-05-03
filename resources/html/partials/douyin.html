@@ -1,0 +1,22 @@
+<div class="content-module">
+  <div class="module-title">
+    <span class="icon"><img src="../svg/douyin.svg" alt=""></span>
+    <span>抖音热搜</span>
+  </div>
+  <div class="douyin-grid">
+    {% for item in douyinHotList %}
+    <div class="douyin-card">
+      <div class="douyin-cover">
+        {% if item.cover %}
+        <img src="{{ item.cover }}" alt="{{ item.title }}">
+        {% else %}
+        <div class="cover-placeholder">🌊</div>
+        {% endif %}
+        <div class="rank-badge">{{ item.rank }}</div>
+      </div>
+      <div class="douyin-title">{{ item.title }}</div>
+      <div class="douyin-hot">🔥 {{ item.hotDisplay }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

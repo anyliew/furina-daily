@@ -1,0 +1,484 @@
+/* ========================================
+   芙宁娜冰透玻璃日报样式
+   配色：冰透白 × #88CDF6 × #BCE6FF
+   正文字体：Content.ttf
+   标题字体：Title.ttf
+   ======================================== */
+@font-face {
+  font-family: 'Content';
+  src: url('../../font/Content.ttf') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Title';
+  src: url('../../font/Title.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Content', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(145deg, #BCE6FF 0%, #ffffff 70%);
+  padding: 20px 24px 0 24px;
+  min-height: 100vh;
+  position: relative;
+  color: #0a2a3b;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -50px;
+  right: -50px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle at 30% 30%, rgba(136, 205, 246, 0.3), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(to top, rgba(188, 230, 255, 0.2), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 1360px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 48px;
+  box-shadow: 0 20px 40px rgba(0, 60, 90, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding-bottom: 12px;
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  padding: 50px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+  position: relative;
+}
+
+.logo-area {
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 175px;
+  height: auto;
+}
+
+.avatar img {
+  width: 100%;
+  height: auto;
+  display: block;
+  box-shadow: none;
+  border: none;
+}
+
+.avatar .default-avatar {
+  font-size: 120px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 16px;
+  display: inline-block;
+  backdrop-filter: blur(4px);
+  color: #88CDF6;
+}
+
+.title-area {
+  text-align: center;
+  text-shadow: 0 4px 12px rgba(255, 255, 255, 0.8);
+  flex: 1;
+  padding: 0 20px;
+}
+
+.title-area h1 {
+  font-family: 'Title', 'Content', 'PingFang SC', sans-serif;
+  color: #0a2a3b;
+  font-size: 135px;
+  font-weight: 700;
+  letter-spacing: 12px;
+  margin: 0;
+  line-height: 1.2;
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* ================= 日期卡片（柔化白条） ================= */
+.date-card {
+  background: rgba(188, 230, 255, 0.5);
+  backdrop-filter: blur(12px);
+  padding: 24px 0;                 /* 左右内边距归零，让横条完全贴边 */
+  border-radius: 40px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 18px rgba(0, 70, 100, 0.08);
+  min-width: 280px;
+  flex-shrink: 0;
+}
+
+.date-card .weekday {
+  color: #0a2a3b;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.date-card .gregorian {
+  color: #1a4b63;
+  font-size: 32px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.65);   /* 半透白，柔和不过亮 */
+  backdrop-filter: blur(8px);               /* 轻微模糊，融入背景 */
+  -webkit-backdrop-filter: blur(8px);
+  padding: 12px 0;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.4);
+}
+
+.date-card .lunar {
+  color: #2a6a84;
+  font-size: 24px;
+  font-weight: 400;
+  margin-top: 10px;
+}
+
+/* ================= 其余模块样式（无改动） ================= */
+.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px 36px 12px 36px;
+  background: transparent;
+}
+
+.module {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 32px;
+  padding: 18px 22px;
+  box-shadow: 0 12px 24px rgba(0, 60, 90, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.module-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 30px;
+  font-weight: 600;
+  color: #0a2a3b;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(136, 205, 246, 0.5);
+}
+
+.module-title .icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 6px rgba(136, 205, 246, 0.4));
+}
+
+.module-title .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.calendar-header {
+  margin-bottom: 14px;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 24px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.calendar-header .main-date {
+  font-weight: 700;
+  font-size: 23px;
+  color: #0a2a3b;
+}
+
+.calendar-header .lunar-detail {
+  font-size: 17px;
+  color: #1a4b63;
+  margin-top: 6px;
+}
+
+.holiday-badge {
+  margin-top: 10px;
+  color: #b8860b;
+  background: rgba(212, 175, 55, 0.18);
+  padding: 6px 14px;
+  border-radius: 30px;
+  display: inline-block;
+  border-left: 4px solid #d4af37;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+  font-size: 16px;
+}
+
+.countdown-list {
+  list-style: none;
+}
+
+.countdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(136, 205, 246, 0.25);
+  font-size: 19px;
+  color: #0a2a3b;
+}
+
+.countdown-name {
+  color: #1a4b63;
+  font-weight: 500;
+}
+
+.countdown-days {
+  font-weight: 600;
+  color: #2a6a84;
+}
+
+.countdown-item.highlight {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(136, 205, 246, 0.25));
+  margin: 6px -8px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border-bottom: none;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+.countdown-item.highlight .countdown-name {
+  color: #0a2a3b;
+  font-weight: 700;
+}
+
+.countdown-item.highlight .countdown-days {
+  background: linear-gradient(145deg, #d4af37, #b8942e);
+  color: white;
+  padding: 5px 18px;
+  border-radius: 40px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.next-payday-box {
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 14px 16px;
+  border-radius: 24px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(136, 205, 246, 0.5);
+  color: #0a2a3b;
+  font-size: 18px;
+}
+
+.next-payday-box div {
+  margin-bottom: 4px;
+}
+
+.hot-list {
+  list-style: none;
+}
+
+.hot-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(136, 205, 246, 0.2);
+}
+
+.hot-tag {
+  background: linear-gradient(145deg, #88CDF6, #5fa9d6);
+  color: white;
+  font-size: 16px;
+  padding: 4px 14px;
+  border-radius: 30px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 90, 130, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.hot-title {
+  flex: 1;
+  color: #0a2a3b;
+  font-size: 19px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* 抖音热搜网格 */
+.douyin-grid {
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.douyin-card {
+  text-align: center;
+  width: 230px;
+}
+
+.douyin-cover {
+  position: relative;
+  width: 230px;
+  height: 300px;
+  background: linear-gradient(145deg, #e3f2fd, #BCE6FF);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 6px;
+  box-shadow: 0 6px 14px rgba(0, 80, 120, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.douyin-cover img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background: transparent;
+  border-radius: 20px;
+}
+
+.cover-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  background: radial-gradient(circle at 30% 20%, #ffffff, #BCE6FF);
+  color: #2a6a84;
+  border-radius: 20px;
+}
+
+.rank-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #0a2a3b;
+  font-size: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(136, 205, 246, 0.3);
+  z-index: 2;
+}
+
+.douyin-card .douyin-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0a2a3b;
+  margin: 6px 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 230px;
+}
+
+.douyin-card .douyin-hot {
+  font-size: 15px;
+  color: #2a6a84;
+  font-weight: 600;
+}
+
+.news-list {
+  list-style: none;
+}
+
+.news-item {
+  display: flex;
+  gap: 16px;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(136, 205, 246, 0.2);
+  font-size: 19px;
+  color: #0a2a3b;
+  line-height: 1.5;
+}
+
+.news-bullet {
+  color: #88CDF6;
+  font-weight: bold;
+  flex-shrink: 0;
+  text-shadow: 0 0 6px rgba(136, 205, 246, 0.6);
+  font-size: 22px;
+}
+
+.single-column {
+  padding: 0 36px 6px 36px;
+}
+
+.content-module {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 32px;
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  box-shadow: 0 12px 24px rgba(0, 60, 90, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.generated-time {
+  text-align: center;
+  font-size: 24px;
+  color: #2a6a84;
+  padding: 10px 0 6px 0;
+  background: transparent;
+  letter-spacing: 2px;
+  font-weight: 500;
+  line-height: 1.6;
+}

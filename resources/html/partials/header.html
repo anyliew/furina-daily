@@ -1,0 +1,19 @@
+<div class="header">
+  <div class="logo-area">
+    <div class="avatar">
+      {% if logoBase64 %}
+      <img src="{{ logoBase64 }}" alt="芙宁娜">
+      {% else %}
+      <div class="default-avatar">💧</div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="title-area">
+    <h1>芙芙心日报</h1>
+  </div>
+  <div class="date-card">
+    <div class="weekday">{{ date.weekdayShort }}</div>
+    <div class="gregorian">{{ date.gregorian }}</div>
+    <div class="lunar">{{ date.lunar }}</div>
+  </div>
+</div>
