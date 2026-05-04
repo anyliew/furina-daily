@@ -2,7 +2,6 @@ import axios from 'axios';
 import { getMockMoyuData } from '../mock/moyu.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
 
-// 解析摸鱼文本（与原来一致）
 export function parseMoyuText(text) {
   const result = {
     date: null,
@@ -107,6 +106,11 @@ export async function fetchMoyuData() {
     }
     throw new Error('非文本格式');
   } catch (e) {
+    logger.error(`[furina-daily] 摸鱼日历 API 请求失败: ${e.message}`);
+    if (e.response) {
+      logger.error(`状态码: ${e.response.status}`);
+      logger.error(`响应体: ${JSON.stringify(e.response.data)}`);
+    }
     logFailure('摸鱼日历 API', true);
     return getMockMoyuData();
   }

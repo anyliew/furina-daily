@@ -12,6 +12,11 @@ export async function fetchITNews() {
     }
     throw new Error('API 返回异常');
   } catch (e) {
+    logger.error(`[furina-daily] IT资讯 API 请求失败: ${e.message}`);
+    if (e.response) {
+      logger.error(`状态码: ${e.response.status}`);
+      logger.error(`响应体: ${JSON.stringify(e.response.data)}`);
+    }
     logFailure('IT资讯', true);
     return getMockITNews();
   }

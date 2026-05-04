@@ -16,6 +16,11 @@ export async function fetchNews60s() {
     }
     throw new Error('API 返回异常');
   } catch (e) {
+    logger.error(`[furina-daily] 60s 读世界 API 请求失败: ${e.message}`);
+    if (e.response) {
+      logger.error(`状态码: ${e.response.status}`);
+      logger.error(`响应体: ${JSON.stringify(e.response.data)}`);
+    }
     logFailure('60s 读世界', true);
     return getMockNews60s();
   }

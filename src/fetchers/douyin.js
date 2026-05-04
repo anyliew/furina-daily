@@ -19,6 +19,11 @@ export async function fetchDouyinHot() {
     }
     throw new Error('API 返回异常');
   } catch (e) {
+    logger.error(`[furina-daily] 抖音热搜 API 请求失败: ${e.message}`);
+    if (e.response) {
+      logger.error(`状态码: ${e.response.status}`);
+      logger.error(`响应体: ${JSON.stringify(e.response.data)}`);
+    }
     logFailure('抖音热搜', true);
     return getMockDouyinHot();
   }
