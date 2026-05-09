@@ -1,0 +1,24 @@
+<div class="content-module">
+  <div class="module-title">
+    <span class="icon"><img src="../svg/bilibili-news.svg" alt=""></span>
+    <span>今日新番</span>
+  </div>
+  <div class="douyin-grid">
+    {% for item in bangumiData.items %}
+    <div class="douyin-card">
+      <div class="douyin-cover">
+        {% if item.image %}
+        <img src="{{ item.image }}" alt="{{ item.displayName }}">
+        {% else %}
+        <div class="cover-placeholder">📺</div>
+        {% endif %}
+      </div>
+      <div class="douyin-title">{{ item.displayName }}</div>
+      <div class="douyin-hot">
+        {% if item.scoreText !== '暂无' %}⭐ {{ item.scoreText }}{% endif %}
+        {% if item.rankText %} · {{ item.rankText }}{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

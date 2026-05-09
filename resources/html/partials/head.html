@@ -3,4 +3,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>芙芙心日报 · 冰晶诗章</title>
   <link rel="stylesheet" href="css/daily.css">
+
+  {# ---- 动态字体配置 ---- #}
+  {% if titleFont or secondaryTitleFont or contentFont %}
+  <style>
+    /* 顶部标题字体 */
+    {% if titleFont %}
+    @font-face {
+      font-family: 'CustomTitleFont';
+      src: url('../font/{{ titleFont }}') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    .header h1 { font-family: 'CustomTitleFont', sans-serif; }
+    {% endif %}
+    {% if titleFontSize %}
+    .header h1 { font-size: {{ titleFontSize }}px; }
+    {% endif %}
+
+    /* 内容标题字体（模块标题） */
+    {% if secondaryTitleFont %}
+    @font-face {
+      font-family: 'CustomSecTitleFont';
+      src: url('../font/{{ secondaryTitleFont }}') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    .module-title { font-family: 'CustomSecTitleFont', sans-serif; }
+    {% endif %}
+    {% if secondaryTitleFontSize %}
+    .module-title { font-size: {{ secondaryTitleFontSize }}px; }
+    {% endif %}
+
+    /* 正文内容字体 */
+    {% if contentFont %}
+    @font-face {
+      font-family: 'CustomContentFont';
+      src: url('../font/{{ contentFont }}') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body { font-family: 'CustomContentFont', sans-serif; }
+    {% endif %}
+    {% if contentFontSize %}
+    body { font-size: {{ contentFontSize }}px; }
+    {% endif %}
+  </style>
+  {% endif %}
 </head>

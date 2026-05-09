@@ -50,7 +50,7 @@ async function clearCache() {
 
 // 加载 Logo 图片为 base64 data URI
 async function loadLogoBase64() {
-  const logoPath = path.join(RESOURCES_DIR, 'images', 'logo.png')
+  const logoPath = path.join(RESOURCES_DIR, 'images', 'furina.png')
   try {
     const buffer = await fs.readFile(logoPath)
     return `data:image/png;base64,${buffer.toString('base64')}`

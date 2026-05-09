@@ -14,5 +14,5 @@ export default {
   showInMenu: 'auto',
   icon: 'mdi:newspaper-variant-outline',
   iconColor: '#88CDF6',
-  iconPath: path.join(_path, 'resources/images/logo.png')
+  iconPath: path.join(_path, 'resources/images/furina.png')
 }

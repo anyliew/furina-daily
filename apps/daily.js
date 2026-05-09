@@ -15,7 +15,6 @@ const pluginRoot = path.resolve(__dirname, '..');
 const defaultConfigPath = path.join(pluginRoot, 'config', 'default_config', 'daily.yaml');
 const userConfigPath = path.join(pluginRoot, 'config', 'config', 'daily.yaml');
 
-// 确保用户配置文件存在
 function ensureUserConfig() {
   const userConfigDir = path.dirname(userConfigPath);
   if (!fs.existsSync(userConfigDir)) {
@@ -28,7 +27,6 @@ function ensureUserConfig() {
 }
 ensureUserConfig();
 
-// 读取完整配置（包含 reportGroup、morningTime、eveningTime）
 export function loadFullConfig() {
   try {
     const data = fs.readFileSync(userConfigPath, 'utf8');
@@ -36,25 +34,54 @@ export function loadFullConfig() {
     return {
       reportGroup: Array.isArray(config.reportGroup) ? config.reportGroup : (config.reportGroup ? [config.reportGroup] : []),
       morningTime: config.morningTime || '0 10 * * *',
-      eveningTime: config.eveningTime || '0 22 * * *'
+      eveningTime: config.eveningTime || '0 22 * * *',
+      customTitle: config.customTitle || '芙芙心日报',
+      logoImage: config.logoImage || 'logo.png',
+      logoSize: config.logoSize || '',
+      titleFont: config.titleFont || 'Title.ttf',
+      titleFontSize: config.titleFontSize || '',
+      secondaryTitleFont: config.secondaryTitleFont || 'Secondary_Title.ttf',
+      secondaryTitleFontSize: config.secondaryTitleFontSize || '',
+      contentFont: config.contentFont || 'Content.ttf',
+      contentFontSize: config.contentFontSize || '',
+      hotModule: config.hotModule || 'douyin'
     };
   } catch (err) {
     logger.error(`[furina-daily] 读取用户配置失败: ${err.message}`);
     return {
       reportGroup: [],
       morningTime: '0 10 * * *',
-      eveningTime: '0 22 * * *'
+      eveningTime: '0 22 * * *',
+      customTitle: '芙芙心日报',
+      logoImage: 'logo.png',
+      logoSize: '',
+      titleFont: 'Title.ttf',
+      titleFontSize: '',
+      secondaryTitleFont: 'Secondary_Title.ttf',
+      secondaryTitleFontSize: '',
+      contentFont: 'Content.ttf',
+      contentFontSize: '',
+      hotModule: 'douyin'
     };
   }
 }
 
-// 保存完整配置
 export function saveFullConfig(data) {
   try {
     const config = {
       reportGroup: data.reportGroup || [],
       morningTime: data.morningTime || '0 10 * * *',
-      eveningTime: data.eveningTime || '0 22 * * *'
+      eveningTime: data.eveningTime || '0 22 * * *',
+      customTitle: data.customTitle || '芙芙心日报',
+      logoImage: data.logoImage || 'logo.png',
+      logoSize: data.logoSize || '',
+      titleFont: data.titleFont || 'Title.ttf',
+      titleFontSize: data.titleFontSize || '',
+      secondaryTitleFont: data.secondaryTitleFont || 'Secondary_Title.ttf',
+      secondaryTitleFontSize: data.secondaryTitleFontSize || '',
+      contentFont: data.contentFont || 'Content.ttf',
+      contentFontSize: data.contentFontSize || '',
+      hotModule: data.hotModule || 'douyin'
     };
     fs.writeFileSync(userConfigPath, yaml.dump(config), 'utf8');
   } catch (err) {
@@ -68,7 +95,6 @@ let eveningJob = null;
 let refreshJobs = [];
 let isGenerating = false;
 
-// 缓存基于日期的图片
 let cachedImagePath = null;
 let cachedDate = '';
 
@@ -106,10 +132,9 @@ async function generateAndGetImage(forceRefresh = false) {
   isGenerating = true;
   try {
     logger.mark('[furina-daily] 开始生成芙芙日报...');
-    const imagePath = await generateDaily();
+    const imagePath = await generateDaily(config);
     logger.mark(`[furina-daily] 日报生成成功: ${imagePath}`);
 
-    // 清理旧图片
     try {
       const dir = path.dirname(imagePath);
       const newFileName = path.basename(imagePath);
@@ -169,7 +194,6 @@ async function sendDailyToAll() {
   }
 }
 
-// 定时任务（支持动态时间）
 export function scheduleTasks() {
   if (morningJob) morningJob.cancel();
   if (eveningJob) eveningJob.cancel();
@@ -203,7 +227,6 @@ export function scheduleTasks() {
 
 scheduleTasks();
 
-// 监听配置文件变动
 let configWatcher = null;
 function watchConfig() {
   if (configWatcher) configWatcher.close();
@@ -220,7 +243,6 @@ async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// 导出 config 供锅巴配置刷新使用
 export { config };
 
 export default class furinaDaily extends Plugin {

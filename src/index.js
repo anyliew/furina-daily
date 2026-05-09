@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import { fetchAllData } from './dataFetcher.js';
+import { fetchDouyinHot } from './fetchers/douyin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +17,6 @@ const TEMP_HTML_PATH = path.join(TEMPLATES_DIR, 'daily.html');
 
 nunjucks.configure(TEMPLATES_DIR, { autoescape: true });
 
-// 浏览器实例复用
 let browserInstance = null;
 
 async function getBrowser() {
@@ -35,7 +35,7 @@ async function getBrowser() {
   return browserInstance;
 }
 
-async function closeBrowser() {
+export async function closeBrowser() {
   if (browserInstance) {
     await browserInstance.close();
     browserInstance = null;
@@ -113,23 +113,67 @@ async function generateImage(html, outputPath) {
   }
 }
 
-export async function generateDaily() {
+export async function generateDaily(config = {}) {
   const outputDir = path.join(__dirname, '../../../temp/daily');
   await fs.mkdir(outputDir, { recursive: true });
 
-  const logoPath = path.join(RESOURCES_DIR, 'images/logo.png');
+  // Logo 处理
+  const logoFileName = config.logoImage || 'logo.png';
+  const logoPath = path.join(RESOURCES_DIR, 'images', logoFileName);
   let logoBase64 = '';
   try {
     const logoBuffer = await fs.readFile(logoPath);
     logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
     console.log('✅ Logo 加载成功');
   } catch (err) {
-    console.warn('⚠️ Logo 未找到，使用默认占位符');
-    logoBase64 = '';
+    console.warn('⚠️ Logo 文件未找到: ' + logoFileName + '，尝试回退默认');
+    const defaultLogoPath = path.join(RESOURCES_DIR, 'images', 'logo.png');
+    try {
+      const defaultBuffer = await fs.readFile(defaultLogoPath);
+      logoBase64 = `data:image/png;base64,${defaultBuffer.toString('base64')}`;
+      console.log('ℹ️ 已回退到默认Logo');
+    } catch {
+      logoBase64 = '';
+    }
   }
 
-  const data = await fetchAllData();
-  data.logoBase64 = logoBase64;
+  const baseData = await fetchAllData();
+
+  const hotModule = config.hotModule || 'douyin';
+  let hotData = null;
+  let isBangumi = false;
+
+  if (hotModule === 'bangumi') {
+    try {
+      const { getTodayBangumi } = await import('./fetchers/bangumi.js');
+      hotData = await getTodayBangumi();
+      hotData.items = hotData.items.slice(0, 10);   // 最多显示 10 部
+      isBangumi = true;
+      console.log(`📺 今日新番获取成功: ${hotData.items.length} 部`);
+    } catch (err) {
+      console.error('今日新番获取失败，回退到抖音热搜:', err.message);
+      hotData = await fetchDouyinHot();
+      isBangumi = false;
+    }
+  } else {
+    hotData = await fetchDouyinHot();
+  }
+
+  const data = {
+    ...baseData,
+    logoBase64,
+    customTitle: config.customTitle || '芙芙心日报',
+    logoSize: config.logoSize || '',
+    titleFont: config.titleFont || 'Title.ttf',
+    titleFontSize: config.titleFontSize || '',
+    secondaryTitleFont: config.secondaryTitleFont || 'Secondary_Title.ttf',
+    secondaryTitleFontSize: config.secondaryTitleFontSize || '',
+    contentFont: config.contentFont || 'Content.ttf',
+    contentFontSize: config.contentFontSize || '',
+    isBangumi,
+    douyinHotList: hotModule !== 'bangumi' ? hotData : [],
+    bangumiData: hotModule === 'bangumi' ? hotData : null
+  };
 
   const html = await generateHTML(data);
 
@@ -139,5 +183,3 @@ export async function generateDaily() {
   await generateImage(html, outputPath);
   return outputPath;
 }
-
-export { closeBrowser };

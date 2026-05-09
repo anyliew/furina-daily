@@ -1,20 +1,17 @@
-# 芙芙日报 (furina-daily) 默认配置文件
-# 插件启动时会自动将此文件复制到 config/config/daily.yaml 供用户修改
-
-# 日报推送群列表
-# 每日早晚定时推送，插件将自动向列表中的群聊发送芙芙日报
-# 格式：QQ群号列表，例如 [123456789, 987654321]
 reportGroup: []
-
-# 早间推送时间（Cron 表达式）
-# 默认每天上午 10:00 执行
 morningTime: "0 10 * * *"
-
-# 晚间推送时间（Cron 表达式）
-# 默认每天晚上 22:00 执行
 eveningTime: "0 22 * * *"
+customTitle: "芙芙心日报"
+logoImage: "logo.png"
+logoSize: ""
 
-# 注意：
-# 1. 用户可通过群聊内发送“开启日报推送” / “关闭日报推送” 来增减本群
-# 2. 手动修改此文件后保存，插件会自动热重载，无需重启机器人
-# 3. 推荐使用锅巴面板（Guoba-Plugin）进行可视化配置推送群与时间
+# 字体配置
+titleFont: "Title.ttf"
+titleFontSize: ""
+secondaryTitleFont: "Secondary_Title.ttf"
+secondaryTitleFontSize: ""
+contentFont: "Content.ttf"
+contentFontSize: ""
+
+# 热搜模块选择：douyin 或 bangumi
+hotModule: "douyin"

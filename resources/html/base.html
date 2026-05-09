@@ -9,7 +9,11 @@
     {% include "partials/bilibili.html" %}
   </div>
   <div class="single-column">
-    {% include "partials/douyin.html" %}
+    {% if isBangumi %}
+      {% include "partials/bangumi.html" %}
+    {% else %}
+      {% include "partials/douyin.html" %}
+    {% endif %}
     {% include "partials/news.html" %}
   </div>
   {% include "partials/footer.html" %}
@@ -33,8 +37,7 @@
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
-          // ✅ 检测你当前的正文字体 Content
-          ctx.font = '72px "Content", sans-serif';
+          ctx.font = '72px "CustomContentFont", sans-serif';
           const withFont = ctx.measureText(testString).width;
           
           ctx.font = '72px sans-serif';
@@ -43,7 +46,7 @@
           if (Math.abs(withFont - withoutFont) > 1) {
             console.log('✅ Content 字体已成功加载并应用！宽度差:', Math.round(withFont - withoutFont));
           } else {
-            console.log('ℹ️ Content 字体与默认字体宽度相近（差值 ' + (withFont - withoutFont).toFixed(2) + '），已加载或正常回退');
+            console.log('ℹ️ Content 字体与默认字体宽度相近，已加载或正常回退');
           }
           
           const bodyFont = window.getComputedStyle(document.body).fontFamily;

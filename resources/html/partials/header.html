@@ -2,14 +2,14 @@
   <div class="logo-area">
     <div class="avatar">
       {% if logoBase64 %}
-      <img src="{{ logoBase64 }}" alt="芙宁娜">
+      <img src="{{ logoBase64 }}" alt="芙宁娜" {% if logoSize %}style="width: {{ logoSize }}px; height: {{ logoSize }}px;"{% endif %}>
       {% else %}
       <div class="default-avatar">💧</div>
       {% endif %}
     </div>
   </div>
   <div class="title-area">
-    <h1>芙芙心日报</h1>
+    <h1>{{ customTitle | default("芙芙心日报") }}</h1>
   </div>
   <div class="date-card">
     <div class="weekday">{{ date.weekdayShort }}</div>
