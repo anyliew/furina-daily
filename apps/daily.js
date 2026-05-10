@@ -1,4 +1,4 @@
-// apps/daily.js
+// plugins/furina-daily/apps/daily.js
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -44,7 +44,11 @@ export function loadFullConfig() {
       secondaryTitleFontSize: config.secondaryTitleFontSize || '',
       contentFont: config.contentFont || 'Content.ttf',
       contentFontSize: config.contentFontSize || '',
-      hotModule: config.hotModule || 'douyin'
+      hotModule: config.hotModule || 'douyin',
+      apiBase: {
+        bangumi: config.apiBase?.bangumi || 'https://api.bgm.tv',
+        viki: config.apiBase?.viki || 'https://60s.viki.moe'
+      }
     };
   } catch (err) {
     logger.error(`[furina-daily] 读取用户配置失败: ${err.message}`);
@@ -61,7 +65,11 @@ export function loadFullConfig() {
       secondaryTitleFontSize: '',
       contentFont: 'Content.ttf',
       contentFontSize: '',
-      hotModule: 'douyin'
+      hotModule: 'douyin',
+      apiBase: {
+        bangumi: 'https://api.bgm.tv',
+        viki: 'https://60s.viki.moe'
+      }
     };
   }
 }
@@ -81,7 +89,11 @@ export function saveFullConfig(data) {
       secondaryTitleFontSize: data.secondaryTitleFontSize || '',
       contentFont: data.contentFont || 'Content.ttf',
       contentFontSize: data.contentFontSize || '',
-      hotModule: data.hotModule || 'douyin'
+      hotModule: data.hotModule || 'douyin',
+      apiBase: {
+        bangumi: data.apiBase?.bangumi || 'https://api.bgm.tv',
+        viki: data.apiBase?.viki || 'https://60s.viki.moe'
+      }
     };
     fs.writeFileSync(userConfigPath, yaml.dump(config), 'utf8');
   } catch (err) {
@@ -256,7 +268,10 @@ export default class furinaDaily extends Plugin {
         { reg: "^开启日报推送$", fnc: "subscribeGroup" },
         { reg: "^关闭日报推送$", fnc: "unsubscribeGroup" },
         { reg: "^(芙芙日报|日报)$", fnc: "manualDaily" },
-        { reg: "^刷新日报$", fnc: "refreshDaily" }
+        { reg: "^刷新日报$", fnc: "refreshDaily" },
+        { reg: "^日报清空配置$", fnc: "clearConfig" },
+        { reg: "^日报切换抖音热搜$", fnc: "switchDouyin" },
+        { reg: "^日报切换今日新番$", fnc: "switchBangumi" }
       ]
     });
   }
@@ -300,5 +315,76 @@ export default class furinaDaily extends Plugin {
     } else {
       await e.reply("❌ 日报刷新失败。");
     }
+  }
+
+  // 主人指令：清空配置
+  async clearConfig(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令');
+      return false;
+    }
+    try {
+      // 备份当前配置
+      const backupDir = path.dirname(userConfigPath);
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+      const randomStr = Math.random().toString(36).slice(2, 8);
+      const backupName = `daily_${dateStr}_${timeStr}_${randomStr}.yaml`;
+      const backupPath = path.join(backupDir, backupName);
+
+      if (fs.existsSync(userConfigPath)) {
+        fs.copyFileSync(userConfigPath, backupPath);
+        logger.mark(`[furina-daily] 配置已备份至 ${backupName}`);
+      }
+
+      // 复制默认配置覆盖当前配置
+      fs.copyFileSync(defaultConfigPath, userConfigPath);
+      logger.mark('[furina-daily] 配置已重置为默认');
+
+      // 重新加载配置并重调度
+      config = loadFullConfig();
+      scheduleTasks();
+
+      await e.reply(`✅ 日报配置已重置为默认，原配置备份为 ${backupName}`);
+    } catch (err) {
+      logger.error('[furina-daily] 清空配置失败:', err);
+      await e.reply(`❌ 清空配置失败：${err.message}`);
+    }
+    return true;
+  }
+
+  // 主人指令：切换至抖音热搜
+  async switchDouyin(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令');
+      return false;
+    }
+    if (config.hotModule === 'douyin') {
+      await e.reply('当前热搜板块已是抖音热搜，无需切换');
+      return true;
+    }
+    config.hotModule = 'douyin';
+    saveFullConfig(config);
+    logger.mark('[furina-daily] 已切换至抖音热搜');
+    await e.reply('✅ 已切换为抖音热搜，下次生成日报时生效');
+    return true;
+  }
+
+  // 主人指令：切换至今日新番
+  async switchBangumi(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令');
+      return false;
+    }
+    if (config.hotModule === 'bangumi') {
+      await e.reply('当前热搜板块已是今日新番，无需切换');
+      return true;
+    }
+    config.hotModule = 'bangumi';
+    saveFullConfig(config);
+    logger.mark('[furina-daily] 已切换至今日新番');
+    await e.reply('✅ 已切换为今日新番，下次生成日报时生效');
+    return true;
   }
 }

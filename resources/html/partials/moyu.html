@@ -4,8 +4,7 @@
     <span>摸鱼日历</span>
   </div>
   <div class="calendar-header">
-    <div class="main-date">📆 {{ moyuData.date }} {{ moyuData.weekday }}</div>
-    <div class="lunar-detail">🌙 {{ moyuData.lunar }} · {{ moyuData.zodiacYear }}</div>
+    <div class="main-date">📆 {{ moyuData.zodiacYear }} · {{ moyuData.date }} {{ moyuData.weekday }}</div>
     {% if moyuData.holidayStatus %}
     <div class="holiday-badge">
       🎉 恭喜！正处于【{{ moyuData.holidayStatus }}】假期 · 还剩 {{ moyuData.holidayRemaining }} 天

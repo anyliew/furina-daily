@@ -1,4 +1,4 @@
-// src/dataFetcher.js
+// plugins/furina-daily/src/dataFetcher.js
 import { format } from 'date-fns';
 import { fetchNews60s } from './fetchers/news60s.js';
 import { fetchMoyuData } from './fetchers/moyu.js';
@@ -8,16 +8,17 @@ import { fetchITNews } from './fetchers/itNews.js';
 import { fetchQuote } from './fetchers/quote.js';
 import { getDateInfo } from './utils/date.js';
 
-export async function fetchAllData() {
-  console.log('📡 开始获取各模块数据...\n');  // 此处 console 可保留作为进度提示
+export async function fetchAllData(config = {}) {
+  console.log('📡 开始获取各模块数据...\n');
 
+  // 传递 config 给各个抓取器，使得它们可以使用自定义 API 地址
   const [news60s, moyuData, bilibiliHot, douyinHotList, itNews, quote, dateInfo] = await Promise.all([
-    fetchNews60s(),
-    fetchMoyuData(),
-    fetchBilibiliHot(),
-    fetchDouyinHot(),
-    fetchITNews(),
-    fetchQuote(),
+    fetchNews60s(config),
+    fetchMoyuData(config),
+    fetchBilibiliHot(config),
+    fetchDouyinHot(config),
+    fetchITNews(config),
+    fetchQuote(config),
     Promise.resolve(getDateInfo())
   ]);
 

@@ -1,4 +1,4 @@
-// src/index.js
+// plugins/furina-daily/src/index.js (核心生成)
 import puppeteer from 'puppeteer';
 import nunjucks from 'nunjucks';
 import path from 'path';
@@ -137,7 +137,8 @@ export async function generateDaily(config = {}) {
     }
   }
 
-  const baseData = await fetchAllData();
+  // 获取基础数据，传入 config 以支持自定义 API
+  const baseData = await fetchAllData(config);
 
   const hotModule = config.hotModule || 'douyin';
   let hotData = null;
@@ -146,17 +147,18 @@ export async function generateDaily(config = {}) {
   if (hotModule === 'bangumi') {
     try {
       const { getTodayBangumi } = await import('./fetchers/bangumi.js');
-      hotData = await getTodayBangumi();
-      hotData.items = hotData.items.slice(0, 10);   // 最多显示 10 部
+      // bangumi 抓取器需要 config.apiBase.bangumi
+      hotData = await getTodayBangumi(config);
+      hotData.items = hotData.items.slice(0, 10);
       isBangumi = true;
       console.log(`📺 今日新番获取成功: ${hotData.items.length} 部`);
     } catch (err) {
       console.error('今日新番获取失败，回退到抖音热搜:', err.message);
-      hotData = await fetchDouyinHot();
+      hotData = await fetchDouyinHot(config);
       isBangumi = false;
     }
   } else {
-    hotData = await fetchDouyinHot();
+    hotData = await fetchDouyinHot(config);
   }
 
   const data = {

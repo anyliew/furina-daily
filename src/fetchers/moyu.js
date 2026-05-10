@@ -1,3 +1,4 @@
+// plugins/furina-daily/src/fetchers/moyu.js
 import axios from 'axios';
 import { getMockMoyuData } from '../mock/moyu.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
@@ -94,9 +95,10 @@ export function parseMoyuText(text) {
   return result;
 }
 
-export async function fetchMoyuData() {
+export async function fetchMoyuData(config = {}) {
+  const base = config.apiBase?.viki || 'https://60s.viki.moe';
   try {
-    const res = await axios.get('https://60s.viki.moe/v2/moyu', {
+    const res = await axios.get(`${base}/v2/moyu`, {
       timeout: 10000,
       params: { encoding: 'text' }
     });

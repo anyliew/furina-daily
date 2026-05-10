@@ -1,4 +1,4 @@
-// apps/help.js
+// plugins/furina-daily/apps/help.js (部分关键修改见内联注释，完整代码如下)
 import fs from 'fs/promises'
 import { existsSync, mkdirSync } from 'fs'
 import path from 'path'
@@ -7,7 +7,6 @@ import puppeteer from 'puppeteer'
 
 const { default: Plugin } = await import('../../../lib/plugins/plugin.js')
 
-// 兼容不同框架获取 segment
 let segment
 try {
   segment = (await import('icqq')).segment
@@ -21,7 +20,6 @@ const RESOURCES_DIR = path.join(PLUGIN_ROOT, 'resources')
 const TEMP_DIR = path.join(process.cwd(), 'temp', 'daily', 'help')
 const CACHE_FILE = path.join(TEMP_DIR, 'help.png')
 
-// 确保临时目录存在（同步）
 function ensureDirSync(dir) {
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true })
@@ -48,7 +46,6 @@ async function clearCache() {
   try { await fs.unlink(CACHE_FILE) } catch {}
 }
 
-// 加载 Logo 图片为 base64 data URI
 async function loadLogoBase64() {
   const logoPath = path.join(RESOURCES_DIR, 'images', 'furina.png')
   try {
@@ -73,7 +70,6 @@ async function buildHelpHtml(logoBase64) {
   const now = new Date()
   const formattedTime = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
 
-  // 标题 Logo
   const logoImg = logoBase64
     ? `<img src="${logoBase64}" style="height:28px; width:28px; vertical-align:middle; margin-right:8px;">`
     : '📰'
@@ -97,19 +93,28 @@ async function buildHelpHtml(logoBase64) {
       ]
     },
     {
+      name: '配置管理',
+      desc: '重置配置与热搜切换（仅主人）',
+      commands: [
+        { cmd: '日报清空配置', desc: '备份当前配置并恢复默认设置' },
+        { cmd: '日报切换抖音热搜', desc: '热搜板块切换为抖音热搜' },
+        { cmd: '日报切换今日新番', desc: '热搜板块切换为今日新番' }
+      ]
+    },
+    {
       name: '高级指令',
       desc: '帮助、更新与配置',
       commands: [
         { cmd: '日报帮助', desc: '显示本帮助菜单' },
         { cmd: '日报帮助刷新', desc: '强制刷新本帮助图片' },
-        { cmd: '日报插件更新', desc: '检查并更新插件（仅BOT主人可用）' }
+        { cmd: '日报插件更新', desc: '检查并更新插件（仅主人）' }
       ]
     },
     {
       name: '配置说明',
       desc: '可视化配置',
       commands: [
-        { cmd: '锅巴面板', desc: '在 Guoba 插件中管理日报推送群与推送时间' }
+        { cmd: '锅巴面板', desc: '在 Guoba 插件中管理推送群、时间、热搜板块以及 API 地址' }
       ]
     }
   ]

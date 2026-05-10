@@ -1,3 +1,4 @@
+// plugins/furina-daily/guoba/configInfo.js
 import { schemas } from './schemas/index.js'
 import { loadFullConfig, saveFullConfig } from '../apps/daily.js'
 
@@ -18,12 +19,14 @@ export default {
       secondaryTitleFontSize: config.secondaryTitleFontSize || '',
       contentFont: config.contentFont || 'Content.ttf',
       contentFontSize: config.contentFontSize || '',
-      hotModule: config.hotModule || 'douyin'
+      hotModule: config.hotModule || 'douyin',
+      'apiBase.bangumi': config.apiBase?.bangumi || 'https://api.bgm.tv',
+      'apiBase.viki': config.apiBase?.viki || 'https://60s.viki.moe'
     }
   },
   async setConfigData(data, { Result }) {
     try {
-      saveFullConfig({
+      const newConfig = {
         reportGroup: data.reportGroup || [],
         morningTime: data.morningTime || '0 10 * * *',
         eveningTime: data.eveningTime || '0 22 * * *',
@@ -36,23 +39,15 @@ export default {
         secondaryTitleFontSize: data.secondaryTitleFontSize || '',
         contentFont: data.contentFont || 'Content.ttf',
         contentFontSize: data.contentFontSize || '',
-        hotModule: data.hotModule || 'douyin'
-      })
+        hotModule: data.hotModule || 'douyin',
+        apiBase: {
+          bangumi: data['apiBase.bangumi'] || 'https://api.bgm.tv',
+          viki: data['apiBase.viki'] || 'https://60s.viki.moe'
+        }
+      }
+      saveFullConfig(newConfig)
       const { scheduleTasks, config } = await import('../apps/daily.js')
-      Object.assign(config, {
-        morningTime: data.morningTime || '0 10 * * *',
-        eveningTime: data.eveningTime || '0 22 * * *',
-        customTitle: data.customTitle || '芙芙心日报',
-        logoImage: data.logoImage || 'logo.png',
-        logoSize: data.logoSize || '',
-        titleFont: data.titleFont || 'Title.ttf',
-        titleFontSize: data.titleFontSize || '',
-        secondaryTitleFont: data.secondaryTitleFont || 'Secondary_Title.ttf',
-        secondaryTitleFontSize: data.secondaryTitleFontSize || '',
-        contentFont: data.contentFont || 'Content.ttf',
-        contentFontSize: data.contentFontSize || '',
-        hotModule: data.hotModule || 'douyin'
-      })
+      Object.assign(config, newConfig)
       scheduleTasks()
       return Result.ok({}, '✅ 芙芙日报配置已保存！')
     } catch (error) {

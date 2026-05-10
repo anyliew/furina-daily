@@ -1,3 +1,4 @@
+// plugins/furina-daily/guoba/schemas/daily.js
 export default [
   {
     field: 'reportGroup',
@@ -119,6 +120,24 @@ export default [
         { label: '抖音热搜', value: 'douyin' },
         { label: '今日新番', value: 'bangumi' }
       ]
+    }
+  },
+  {
+    field: 'apiBase.bangumi',
+    label: 'Bangumi API 地址',
+    component: 'Input',
+    bottomHelpMessage: '今日新番数据源的基础地址，默认 https://api.bgm.tv',
+    componentProps: {
+      placeholder: 'https://api.bgm.tv'
+    }
+  },
+  {
+    field: 'apiBase.viki',
+    label: '60S API 地址',
+    component: 'Input',
+    bottomHelpMessage: '新闻、摸鱼、热搜、IT、一言等数据的基础地址，默认 https://60s.viki.moe',
+    componentProps: {
+      placeholder: 'https://60s.viki.moe'
     }
   }
 ];

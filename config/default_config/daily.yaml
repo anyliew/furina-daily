@@ -1,17 +1,17 @@
+# plugins/furina-daily/config/default_config/daily.yaml
 reportGroup: []
 morningTime: "0 10 * * *"
 eveningTime: "0 22 * * *"
 customTitle: "芙芙心日报"
 logoImage: "logo.png"
 logoSize: ""
-
-# 字体配置
 titleFont: "Title.ttf"
 titleFontSize: ""
 secondaryTitleFont: "Secondary_Title.ttf"
 secondaryTitleFontSize: ""
 contentFont: "Content.ttf"
 contentFontSize: ""
-
-# 热搜模块选择：douyin 或 bangumi
 hotModule: "douyin"
+apiBase:
+  bangumi: "https://api.bgm.tv"
+  viki: "https://60s.viki.moe"
