@@ -1,4 +1,4 @@
-// plugins/furina-daily/guoba/schemas/daily.js
+// guoba/schemas/daily.js
 export default [
   {
     field: 'reportGroup',
@@ -138,6 +138,18 @@ export default [
     bottomHelpMessage: '新闻、摸鱼、热搜、IT、一言等数据的基础地址，默认 https://60s.viki.moe',
     componentProps: {
       placeholder: 'https://60s.viki.moe'
+    }
+  },
+  {
+    field: 'theme',
+    label: '日报主题',
+    component: 'Select',
+    bottomHelpMessage: '选择日报的配色主题',
+    componentProps: {
+      options: [
+        { label: '芙芙蓝色', value: 'blue' },
+        { label: '真寻粉色', value: 'pink' }
+      ]
     }
   }
 ];

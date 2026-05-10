@@ -1,4 +1,4 @@
-// plugins/furina-daily/guoba/configInfo.js
+// guoba/configInfo.js
 import { schemas } from './schemas/index.js'
 import { loadFullConfig, saveFullConfig } from '../apps/daily.js'
 
@@ -21,7 +21,8 @@ export default {
       contentFontSize: config.contentFontSize || '',
       hotModule: config.hotModule || 'douyin',
       'apiBase.bangumi': config.apiBase?.bangumi || 'https://api.bgm.tv',
-      'apiBase.viki': config.apiBase?.viki || 'https://60s.viki.moe'
+      'apiBase.viki': config.apiBase?.viki || 'https://60s.viki.moe',
+      theme: config.theme || 'blue'
     }
   },
   async setConfigData(data, { Result }) {
@@ -43,7 +44,8 @@ export default {
         apiBase: {
           bangumi: data['apiBase.bangumi'] || 'https://api.bgm.tv',
           viki: data['apiBase.viki'] || 'https://60s.viki.moe'
-        }
+        },
+        theme: data.theme || 'blue'
       }
       saveFullConfig(newConfig)
       const { scheduleTasks, config } = await import('../apps/daily.js')

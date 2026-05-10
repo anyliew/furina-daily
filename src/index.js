@@ -1,4 +1,4 @@
-// plugins/furina-daily/src/index.js (核心生成)
+// src/index.js
 import puppeteer from 'puppeteer';
 import nunjucks from 'nunjucks';
 import path from 'path';
@@ -43,8 +43,8 @@ export async function closeBrowser() {
   }
 }
 
-async function generateHTML(data) {
-  return nunjucks.render('base.html', data);
+async function generateHTML(data, templateFile = 'base.html') {
+  return nunjucks.render(templateFile, data);
 }
 
 async function generateImage(html, outputPath) {
@@ -147,7 +147,6 @@ export async function generateDaily(config = {}) {
   if (hotModule === 'bangumi') {
     try {
       const { getTodayBangumi } = await import('./fetchers/bangumi.js');
-      // bangumi 抓取器需要 config.apiBase.bangumi
       hotData = await getTodayBangumi(config);
       hotData.items = hotData.items.slice(0, 10);
       isBangumi = true;
@@ -177,7 +176,9 @@ export async function generateDaily(config = {}) {
     bangumiData: hotModule === 'bangumi' ? hotData : null
   };
 
-  const html = await generateHTML(data);
+  // 根据主题选择模板
+  const templateFile = config.theme === 'pink' ? 'base_pink.html' : 'base.html';
+  const html = await generateHTML(data, templateFile);
 
   const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
   const outputPath = path.join(outputDir, `fufu-${timestamp}.png`);

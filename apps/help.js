@@ -1,4 +1,4 @@
-// plugins/furina-daily/apps/help.js (部分关键修改见内联注释，完整代码如下)
+// apps/help.js
 import fs from 'fs/promises'
 import { existsSync, mkdirSync } from 'fs'
 import path from 'path'
@@ -93,10 +93,11 @@ async function buildHelpHtml(logoBase64) {
       ]
     },
     {
-      name: '配置管理',
-      desc: '重置配置与热搜切换（仅主人）',
+      name: '主题与热搜',
+      desc: '切换主题或热搜板块（仅主人）',
       commands: [
-        { cmd: '日报清空配置', desc: '备份当前配置并恢复默认设置' },
+        { cmd: '日报主题切换 芙芙蓝色', desc: '使用蓝色默认主题' },
+        { cmd: '日报主题切换 真寻粉色', desc: '使用粉色真寻主题' },
         { cmd: '日报切换抖音热搜', desc: '热搜板块切换为抖音热搜' },
         { cmd: '日报切换今日新番', desc: '热搜板块切换为今日新番' }
       ]
@@ -107,14 +108,15 @@ async function buildHelpHtml(logoBase64) {
       commands: [
         { cmd: '日报帮助', desc: '显示本帮助菜单' },
         { cmd: '日报帮助刷新', desc: '强制刷新本帮助图片' },
-        { cmd: '日报插件更新', desc: '检查并更新插件（仅主人）' }
+        { cmd: '日报插件更新', desc: '检查并更新插件（仅主人）' },
+        { cmd: '日报清空配置', desc: '备份当前配置并恢复默认设置（仅主人）' }
       ]
     },
     {
       name: '配置说明',
       desc: '可视化配置',
       commands: [
-        { cmd: '锅巴面板', desc: '在 Guoba 插件中管理推送群、时间、热搜板块以及 API 地址' }
+        { cmd: '锅巴面板', desc: '在 Guoba 插件中管理推送群、时间、主题、API 等设置' }
       ]
     }
   ]

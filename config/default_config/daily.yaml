@@ -1,4 +1,4 @@
-# plugins/furina-daily/config/default_config/daily.yaml
+# config/default_config/daily.yaml
 reportGroup: []
 morningTime: "0 10 * * *"
 eveningTime: "0 22 * * *"
@@ -15,3 +15,4 @@ hotModule: "douyin"
 apiBase:
   bangumi: "https://api.bgm.tv"
   viki: "https://60s.viki.moe"
+theme: "blue"

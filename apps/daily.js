@@ -1,4 +1,4 @@
-// plugins/furina-daily/apps/daily.js
+// apps/daily.js
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -48,7 +48,8 @@ export function loadFullConfig() {
       apiBase: {
         bangumi: config.apiBase?.bangumi || 'https://api.bgm.tv',
         viki: config.apiBase?.viki || 'https://60s.viki.moe'
-      }
+      },
+      theme: config.theme || 'blue'
     };
   } catch (err) {
     logger.error(`[furina-daily] 读取用户配置失败: ${err.message}`);
@@ -69,7 +70,8 @@ export function loadFullConfig() {
       apiBase: {
         bangumi: 'https://api.bgm.tv',
         viki: 'https://60s.viki.moe'
-      }
+      },
+      theme: 'blue'
     };
   }
 }
@@ -93,7 +95,8 @@ export function saveFullConfig(data) {
       apiBase: {
         bangumi: data.apiBase?.bangumi || 'https://api.bgm.tv',
         viki: data.apiBase?.viki || 'https://60s.viki.moe'
-      }
+      },
+      theme: data.theme || 'blue'
     };
     fs.writeFileSync(userConfigPath, yaml.dump(config), 'utf8');
   } catch (err) {
@@ -271,7 +274,8 @@ export default class furinaDaily extends Plugin {
         { reg: "^刷新日报$", fnc: "refreshDaily" },
         { reg: "^日报清空配置$", fnc: "clearConfig" },
         { reg: "^日报切换抖音热搜$", fnc: "switchDouyin" },
-        { reg: "^日报切换今日新番$", fnc: "switchBangumi" }
+        { reg: "^日报切换今日新番$", fnc: "switchBangumi" },
+        { reg: /^日报主题切换\s*(.*)$/, fnc: "switchTheme" }
       ]
     });
   }
@@ -324,7 +328,6 @@ export default class furinaDaily extends Plugin {
       return false;
     }
     try {
-      // 备份当前配置
       const backupDir = path.dirname(userConfigPath);
       const now = new Date();
       const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
@@ -338,11 +341,9 @@ export default class furinaDaily extends Plugin {
         logger.mark(`[furina-daily] 配置已备份至 ${backupName}`);
       }
 
-      // 复制默认配置覆盖当前配置
       fs.copyFileSync(defaultConfigPath, userConfigPath);
       logger.mark('[furina-daily] 配置已重置为默认');
 
-      // 重新加载配置并重调度
       config = loadFullConfig();
       scheduleTasks();
 
@@ -386,5 +387,28 @@ export default class furinaDaily extends Plugin {
     logger.mark('[furina-daily] 已切换至今日新番');
     await e.reply('✅ 已切换为今日新番，下次生成日报时生效');
     return true;
+  }
+
+  // 主人指令：主题切换
+  async switchTheme(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令');
+      return false;
+    }
+    const msg = e.msg || e.message || '';
+    if (/芙芙蓝色/.test(msg)) {
+      config.theme = 'blue';
+      saveFullConfig(config);
+      await e.reply('✅ 已切换至主题【芙芙蓝色】，下次生成日报时生效');
+      return true;
+    }
+    if (/真寻粉色/.test(msg)) {
+      config.theme = 'pink';
+      saveFullConfig(config);
+      await e.reply('✅ 已切换至主题【真寻粉色】，下次生成日报时生效');
+      return true;
+    }
+    await e.reply('❌ 主题名称错误，可用主题：芙芙蓝色、真寻粉色。示例：日报主题切换 芙芙蓝色');
+    return false;
   }
 }
