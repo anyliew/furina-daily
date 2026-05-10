@@ -78,8 +78,7 @@ theme: 'blue'                # 主题：blue（芙芙蓝色） / pink（真寻�
 
 提示：安装 Guoba-Plugin 后，可在 “插件配置” 中直接管理以上所有字段。
 
-
-##　📁 文件结构
+## 📁文件结构
 
 ```text
 furina-daily
