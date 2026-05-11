@@ -1,10 +1,10 @@
-// src/index.js
-import puppeteer from 'puppeteer';
+// src/index.js - 使用 Yunzai 渲染器的浏览器实例生成日报
+import fs from 'fs/promises';
 import nunjucks from 'nunjucks';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
 import sharp from 'sharp';
+import renderer from '../../../lib/puppeteer/puppeteer.js';
 import { fetchAllData } from './dataFetcher.js';
 import { fetchDouyinHot } from './fetchers/douyin.js';
 
@@ -17,64 +17,66 @@ const TEMP_HTML_PATH = path.join(TEMPLATES_DIR, 'daily.html');
 
 nunjucks.configure(TEMPLATES_DIR, { autoescape: true });
 
-let browserInstance = null;
-
-async function getBrowser() {
-  if (!browserInstance || !browserInstance.isConnected()) {
-    console.log('🚀 启动新浏览器实例...');
-    browserInstance = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--allow-file-access-from-files',
-        '--disable-dev-shm-usage'
-      ]
-    });
-  }
-  return browserInstance;
-}
-
 export async function closeBrowser() {
-  if (browserInstance) {
-    await browserInstance.close();
-    browserInstance = null;
-    console.log('🔒 浏览器实例已关闭');
-  }
+  console.log('🔒 [furina-daily] Yunzai 渲染器浏览器由框架管理');
 }
 
-async function generateHTML(data, templateFile = 'base.html') {
-  return nunjucks.render(templateFile, data);
-}
-
-async function generateImage(html, outputPath) {
-  const browser = await getBrowser();
-  let page = null;
-
+/**
+ * 确保 Yunzai 渲染器的浏览器实例已启动并可用
+ */
+async function ensureBrowser() {
+  if (renderer.browser && renderer.browser.isConnected()) return;
+  console.log('⏳ 初始化/重用浏览器...');
+  // 用最简单模板触发浏览器启动
+  const initTpl = path.join(__dirname, '../resources/html/test.html').replace(/\\/g, '/');
   try {
-    await fs.mkdir(TEMPLATES_DIR, { recursive: true });
-    await fs.writeFile(TEMP_HTML_PATH, html, 'utf-8');
-    console.log(`📄 临时 HTML 已写入: ${TEMP_HTML_PATH}`);
+    await renderer.render('_furina_init', { tplFile: initTpl, saveId: 'init' });
+  } catch (e) {
+    console.warn('⏳ 浏览器初始化调用完成 (可能无图片输出):', e.message);
+  }
+  if (!renderer.browser || !renderer.browser.isConnected()) {
+    throw new Error('无法获取 Yunzai 浏览器实例');
+  }
+  console.log('✅ 浏览器实例就绪');
+}
 
+/**
+ * 通过 renderer.browser 创建页面，加载我们的 HTML 并截图
+ */
+async function screenshotWithRenderer(templateFile, templateData, outputPath) {
+  // 保证浏览器可用
+  await ensureBrowser();
+
+  const html = nunjucks.render(templateFile, templateData);
+  await fs.mkdir(TEMPLATES_DIR, { recursive: true });
+  await fs.writeFile(TEMP_HTML_PATH, html, 'utf-8');
+  console.log(`📄 HTML 已生成: ${TEMP_HTML_PATH}`);
+
+  const browser = renderer.browser;
+  let page;
+  try {
     page = await browser.newPage();
 
+    // 捕获控制台日志（调试用）
     page.on('console', msg => {
       const text = msg.text();
-      if (text.includes('字体') || text.includes('✅') || text.includes('❌') || text.includes('🔍') || text.includes('📐') || text.includes('📝')) {
+      if (text.includes('字体') || text.includes('✅') || text.includes('❌') ||
+          text.includes('🔍') || text.includes('📐') || text.includes('📝')) {
         console.log(`[浏览器 ${msg.type()}] ${text}`);
       }
     });
 
     page.on('requestfailed', request => {
-      console.error(`[浏览器 请求失败] ${request.url()} - 错误: ${request.failure().errorText}`);
+      console.error(`[浏览器 请求失败] ${request.url()} - ${request.failure().errorText}`);
     });
 
     await page.setViewport({ width: 1440, height: 1080, deviceScaleFactor: 2 });
 
-    const fileUrl = `file://${TEMP_HTML_PATH.replace(/\\/g, '/')}`;
-    console.log(`🌐 加载 URL: ${fileUrl}`);
-    await page.goto(fileUrl, { waitUntil: 'networkidle0' });
+    const fileUrl = 'file:///' + TEMP_HTML_PATH.replace(/\\/g, '/');
+    console.log(`🌐 加载本地文件: ${fileUrl}`);
+    await page.goto(fileUrl, { waitUntil: 'networkidle0', timeout: 30000 });
 
+    // 等待所有图片和字体就绪
     await page.evaluate(async () => {
       const images = Array.from(document.querySelectorAll('img'));
       await Promise.all(images.map(img => {
@@ -95,8 +97,9 @@ async function generateImage(html, outputPath) {
 
     const screenshotBuffer = await page.screenshot({ type: 'png', fullPage: true });
 
+    // sharp 压缩（与原方案一致）
     const compressedBuffer = await sharp(screenshotBuffer)
-      .png({ quality: 80, compressionLevel: 9, adaptiveFiltering: true, palette: true })
+      .png({ compressionLevel: 9, adaptiveFiltering: true, palette: true })
       .toBuffer();
 
     await fs.writeFile(outputPath, compressedBuffer);
@@ -117,7 +120,7 @@ export async function generateDaily(config = {}) {
   const outputDir = path.join(__dirname, '../../../temp/daily');
   await fs.mkdir(outputDir, { recursive: true });
 
-  // Logo 处理
+  // Logo 加载
   const logoFileName = config.logoImage || 'logo.png';
   const logoPath = path.join(RESOURCES_DIR, 'images', logoFileName);
   let logoBase64 = '';
@@ -125,21 +128,18 @@ export async function generateDaily(config = {}) {
     const logoBuffer = await fs.readFile(logoPath);
     logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
     console.log('✅ Logo 加载成功');
-  } catch (err) {
-    console.warn('⚠️ Logo 文件未找到: ' + logoFileName + '，尝试回退默认');
-    const defaultLogoPath = path.join(RESOURCES_DIR, 'images', 'logo.png');
+  } catch {
+    console.warn('⚠️ Logo 文件未找到: ' + logoFileName);
     try {
-      const defaultBuffer = await fs.readFile(defaultLogoPath);
+      const defaultBuffer = await fs.readFile(path.join(RESOURCES_DIR, 'images', 'logo.png'));
       logoBase64 = `data:image/png;base64,${defaultBuffer.toString('base64')}`;
-      console.log('ℹ️ 已回退到默认Logo');
-    } catch {
-      logoBase64 = '';
-    }
+    } catch { logoBase64 = ''; }
   }
 
-  // 获取基础数据，传入 config 以支持自定义 API
+  // 基础数据
   const baseData = await fetchAllData(config);
 
+  // 热搜板块选择
   const hotModule = config.hotModule || 'douyin';
   let hotData = null;
   let isBangumi = false;
@@ -160,7 +160,7 @@ export async function generateDaily(config = {}) {
     hotData = await fetchDouyinHot(config);
   }
 
-  const data = {
+  const templateData = {
     ...baseData,
     logoBase64,
     customTitle: config.customTitle || '芙芙心日报',
@@ -176,13 +176,12 @@ export async function generateDaily(config = {}) {
     bangumiData: hotModule === 'bangumi' ? hotData : null
   };
 
-  // 根据主题选择模板
   const templateFile = config.theme === 'pink' ? 'base_pink.html' : 'base.html';
-  const html = await generateHTML(data, templateFile);
-
   const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
   const outputPath = path.join(outputDir, `fufu-${timestamp}.png`);
 
-  await generateImage(html, outputPath);
+  console.log(`🎨 使用模板: ${templateFile}, 输出: ${outputPath}`);
+  await screenshotWithRenderer(templateFile, templateData, outputPath);
+
   return outputPath;
 }
