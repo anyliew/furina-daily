@@ -1,11 +1,11 @@
 // guoba/configInfo.js
 import { schemas } from './schemas/index.js'
-import { loadFullConfig, saveFullConfig } from '../apps/daily.js'
+import Config from '../apps/config.js'   // 🔁 修改处
 
 export default {
   schemas,
   getConfigData() {
-    const config = loadFullConfig()
+    const config = Config.get()
     return {
       reportGroup: config.reportGroup || [],
       morningTime: config.morningTime || '0 10 * * *',
@@ -27,30 +27,27 @@ export default {
   },
   async setConfigData(data, { Result }) {
     try {
-      const newConfig = {
-        reportGroup: data.reportGroup || [],
-        morningTime: data.morningTime || '0 10 * * *',
-        eveningTime: data.eveningTime || '0 22 * * *',
-        customTitle: data.customTitle || '芙芙心日报',
-        logoImage: data.logoImage || 'logo.png',
-        logoSize: data.logoSize || '',
-        titleFont: data.titleFont || 'Title.ttf',
-        titleFontSize: data.titleFontSize || '',
-        secondaryTitleFont: data.secondaryTitleFont || 'Secondary_Title.ttf',
-        secondaryTitleFontSize: data.secondaryTitleFontSize || '',
-        contentFont: data.contentFont || 'Content.ttf',
-        contentFontSize: data.contentFontSize || '',
-        hotModule: data.hotModule || 'douyin',
-        apiBase: {
-          bangumi: data['apiBase.bangumi'] || 'https://api.bgm.tv',
-          viki: data['apiBase.viki'] || 'https://60s.viki.moe'
-        },
-        theme: data.theme || 'blue'
+      const current = Config.get()
+      current.reportGroup = data.reportGroup || []
+      current.morningTime = data.morningTime || '0 10 * * *'
+      current.eveningTime = data.eveningTime || '0 22 * * *'
+      current.customTitle = data.customTitle || '芙芙心日报'
+      current.logoImage = data.logoImage || 'logo.png'
+      current.logoSize = data.logoSize || ''
+      current.titleFont = data.titleFont || 'Title.ttf'
+      current.titleFontSize = data.titleFontSize || ''
+      current.secondaryTitleFont = data.secondaryTitleFont || 'Secondary_Title.ttf'
+      current.secondaryTitleFontSize = data.secondaryTitleFontSize || ''
+      current.contentFont = data.contentFont || 'Content.ttf'
+      current.contentFontSize = data.contentFontSize || ''
+      current.hotModule = data.hotModule || 'douyin'
+      current.apiBase = {
+        bangumi: data['apiBase.bangumi'] || 'https://api.bgm.tv',
+        viki: data['apiBase.viki'] || 'https://60s.viki.moe'
       }
-      saveFullConfig(newConfig)
-      const { scheduleTasks, config } = await import('../apps/daily.js')
-      Object.assign(config, newConfig)
-      scheduleTasks()
+      current.theme = data.theme || 'blue'
+      
+      Config.set(current)
       return Result.ok({}, '✅ 芙芙日报配置已保存！')
     } catch (error) {
       console.error('[furina-daily] 锅巴配置保存失败:', error)
