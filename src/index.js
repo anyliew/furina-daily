@@ -7,6 +7,7 @@ import sharp from 'sharp';
 import renderer from '../../../lib/puppeteer/puppeteer.js';
 import { fetchAllData } from './dataFetcher.js';
 import { fetchDouyinHot } from './fetchers/douyin.js';
+import { fetchToutiao } from './fetchers/toutiao.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +28,6 @@ export async function closeBrowser() {
 async function ensureBrowser() {
   if (renderer.browser && renderer.browser.isConnected()) return;
   console.log('⏳ 初始化/重用浏览器...');
-  // 用最简单模板触发浏览器启动
   const initTpl = path.join(__dirname, '../resources/html/test.html').replace(/\\/g, '/');
   try {
     await renderer.render('_furina_init', { tplFile: initTpl, saveId: 'init' });
@@ -44,7 +44,6 @@ async function ensureBrowser() {
  * 通过 renderer.browser 创建页面，加载我们的 HTML 并截图
  */
 async function screenshotWithRenderer(templateFile, templateData, outputPath) {
-  // 保证浏览器可用
   await ensureBrowser();
 
   const html = nunjucks.render(templateFile, templateData);
@@ -57,7 +56,6 @@ async function screenshotWithRenderer(templateFile, templateData, outputPath) {
   try {
     page = await browser.newPage();
 
-    // 捕获控制台日志（调试用）
     page.on('console', msg => {
       const text = msg.text();
       if (text.includes('字体') || text.includes('✅') || text.includes('❌') ||
@@ -76,7 +74,6 @@ async function screenshotWithRenderer(templateFile, templateData, outputPath) {
     console.log(`🌐 加载本地文件: ${fileUrl}`);
     await page.goto(fileUrl, { waitUntil: 'networkidle0', timeout: 30000 });
 
-    // 等待所有图片和字体就绪
     await page.evaluate(async () => {
       const images = Array.from(document.querySelectorAll('img'));
       await Promise.all(images.map(img => {
@@ -97,7 +94,6 @@ async function screenshotWithRenderer(templateFile, templateData, outputPath) {
 
     const screenshotBuffer = await page.screenshot({ type: 'png', fullPage: true });
 
-    // sharp 压缩（与原方案一致）
     const compressedBuffer = await sharp(screenshotBuffer)
       .png({ compressionLevel: 9, adaptiveFiltering: true, palette: true })
       .toBuffer();
@@ -143,6 +139,7 @@ export async function generateDaily(config = {}) {
   const hotModule = config.hotModule || 'douyin';
   let hotData = null;
   let isBangumi = false;
+  let isToutiao = false;
 
   if (hotModule === 'bangumi') {
     try {
@@ -156,6 +153,10 @@ export async function generateDaily(config = {}) {
       hotData = await fetchDouyinHot(config);
       isBangumi = false;
     }
+  } else if (hotModule === 'toutiao') {
+    hotData = await fetchToutiao(config);
+    isToutiao = true;
+    console.log(`📰 头条热搜获取成功: ${hotData.length} 条`);
   } else {
     hotData = await fetchDouyinHot(config);
   }
@@ -172,8 +173,10 @@ export async function generateDaily(config = {}) {
     contentFont: config.contentFont || 'Content.ttf',
     contentFontSize: config.contentFontSize || '',
     isBangumi,
-    douyinHotList: hotModule !== 'bangumi' ? hotData : [],
-    bangumiData: hotModule === 'bangumi' ? hotData : null
+    isToutiao,
+    douyinHotList: hotModule === 'douyin' ? hotData : [],
+    bangumiData: hotModule === 'bangumi' ? hotData : null,
+    toutiaoHot: hotModule === 'toutiao' ? hotData : []
   };
 
   const templateFile = config.theme === 'pink' ? 'base_pink.html' : 'base.html';

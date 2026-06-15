@@ -1,0 +1,55 @@
+// plugins/furina-daily/src/mock/zhihu.js
+export function getMockZhihu() {
+  return [
+    {
+      title: '如何看待 2026 年五一假期的调休安排？',
+      hotValueDesc: '1172 万热度',
+      answerCnt: 845,
+      followerCnt: 3200,
+      commentCnt: 456,
+      link: 'https://www.zhihu.com/question/xxx',
+      cover: '',
+      rank: 1,
+    },
+    {
+      title: '2026 年一季度经济数据公布，哪些信号值得关注？',
+      hotValueDesc: '986 万热度',
+      answerCnt: 312,
+      followerCnt: 1890,
+      commentCnt: 203,
+      link: 'https://www.zhihu.com/question/yyy',
+      cover: '',
+      rank: 2,
+    },
+    {
+      title: '《黑神话：悟空》DLC 预告放出，你有哪些期待？',
+      hotValueDesc: '821 万热度',
+      answerCnt: 623,
+      followerCnt: 4100,
+      commentCnt: 892,
+      link: 'https://www.zhihu.com/question/zzz',
+      cover: '',
+      rank: 3,
+    },
+    {
+      title: '如何看待“AI 复活亲人”服务引发的伦理争议？',
+      hotValueDesc: '734 万热度',
+      answerCnt: 278,
+      followerCnt: 1570,
+      commentCnt: 345,
+      link: 'https://www.zhihu.com/question/aaa',
+      cover: '',
+      rank: 4,
+    },
+    {
+      title: '特斯拉新车型 Model 2 曝光，会对国内新能源市场产生冲击吗？',
+      hotValueDesc: '652 万热度',
+      answerCnt: 451,
+      followerCnt: 2760,
+      commentCnt: 512,
+      link: 'https://www.zhihu.com/question/bbb',
+      cover: '',
+      rank: 5,
+    },
+  ];
+}

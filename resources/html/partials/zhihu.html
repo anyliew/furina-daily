@@ -1,0 +1,15 @@
+<div class="module">
+  <div class="module-title">
+    <span class="icon"><img src="../svg/zhizhu.svg" alt="知乎"></span>
+    <span>知乎话题榜</span>
+  </div>
+  <ul class="hot-list">
+    {% for item in zhihuHot %}
+    <li class="hot-item">
+      <span class="hot-tag">{{ item.rank }}</span>
+      <span class="hot-title">{{ item.title }}</span>
+      <span class="hot-desc">{{ item.hotValueDesc }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

@@ -81,7 +81,7 @@ async function buildHelpHtml(logoBase64) {
       commands: [
         { cmd: '芙芙日报', desc: '手动获取今天的最新日报（智能缓存）' },
         { cmd: '日报', desc: '同上，快捷获取日报' },
-        { cmd: '刷新日报', desc: '强制刷新日报，重新抓取最新数据' }
+        { cmd: '刷新日报', desc: '强制刷新日报，重新抓取最新数据（仅主人）' }
       ]
     },
     {
@@ -99,7 +99,8 @@ async function buildHelpHtml(logoBase64) {
         { cmd: '日报主题切换 芙芙蓝色', desc: '使用蓝色默认主题' },
         { cmd: '日报主题切换 真寻粉色', desc: '使用粉色真寻主题' },
         { cmd: '日报切换抖音热搜', desc: '热搜板块切换为抖音热搜' },
-        { cmd: '日报切换今日新番', desc: '热搜板块切换为今日新番' }
+        { cmd: '日报切换今日新番', desc: '热搜板块切换为今日新番' },
+        { cmd: '日报切换头条热搜', desc: '热搜板块切换为头条热搜' }
       ]
     },
     {

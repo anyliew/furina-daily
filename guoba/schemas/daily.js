@@ -114,11 +114,12 @@ export default [
     field: 'hotModule',
     label: '热搜板块',
     component: 'Select',
-    bottomHelpMessage: '选择展示抖音热搜或今日新番',
+    bottomHelpMessage: '选择展示抖音热搜、今日新番或头条热搜',
     componentProps: {
       options: [
         { label: '抖音热搜', value: 'douyin' },
-        { label: '今日新番', value: 'bangumi' }
+        { label: '今日新番', value: 'bangumi' },
+        { label: '头条热搜', value: 'toutiao' }
       ]
     }
   },

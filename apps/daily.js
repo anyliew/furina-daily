@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import schedule from 'node-schedule'
-import Config from './config.js'   // 🔁 修改处
+import Config from './config.js'
 import { generateDaily, closeBrowser } from '../src/index.js'
 
 const { default: Plugin } = await import('../../../lib/plugins/plugin.js')
@@ -186,6 +186,7 @@ export default class furinaDaily extends Plugin {
         { reg: "^日报清空配置$", fnc: "clearConfig" },
         { reg: "^日报切换抖音热搜$", fnc: "switchDouyin" },
         { reg: "^日报切换今日新番$", fnc: "switchBangumi" },
+        { reg: "^日报切换头条热搜$", fnc: "switchToutiao" },
         { reg: /^日报主题切换\s*(.*)$/, fnc: "switchTheme" }
       ]
     })
@@ -222,6 +223,10 @@ export default class furinaDaily extends Plugin {
   }
 
   async refreshDaily(e) {
+    if (!e.isMaster) {
+      logger.debug(`[furina-daily] 非主人尝试刷新日报: ${e.user_id}，已忽略`)
+      return false
+    }
     logger.debug(`[furina-daily] 刷新日报 by ${e.user_id}`)
     await e.reply("🔄 正在刷新日报...")
     const imagePath = await generateAndGetImage(true)
@@ -296,6 +301,22 @@ export default class furinaDaily extends Plugin {
     Config.set(config)
     logger.mark('[furina-daily] 已切换至今日新番')
     await e.reply('✅ 已切换为今日新番，下次生成日报时生效')
+    return true
+  }
+
+  async switchToutiao(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令')
+      return false
+    }
+    if (config.hotModule === 'toutiao') {
+      await e.reply('当前热搜板块已是头条热搜，无需切换')
+      return true
+    }
+    config.hotModule = 'toutiao'
+    Config.set(config)
+    logger.mark('[furina-daily] 已切换至头条热搜')
+    await e.reply('✅ 已切换为头条热搜，下次生成日报时生效')
     return true
   }
 

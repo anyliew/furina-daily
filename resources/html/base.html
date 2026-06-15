@@ -6,11 +6,13 @@
   {% include "partials/header.html" %}
   <div class="two-columns">
     {% include "partials/moyu.html" %}
-    {% include "partials/bilibili.html" %}
+    {% include "partials/zhihu.html" %}
   </div>
   <div class="single-column">
     {% if isBangumi %}
       {% include "partials/bangumi.html" %}
+    {% elif isToutiao %}
+      {% include "partials/toutiao.html" %}
     {% else %}
       {% include "partials/douyin.html" %}
     {% endif %}
