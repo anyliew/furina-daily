@@ -132,10 +132,10 @@ export async function generateDaily(config = {}) {
     } catch { logoBase64 = ''; }
   }
 
-  // 基础数据
+  // 获取固定模块数据（新闻、摸鱼、知乎、IT）
   const baseData = await fetchAllData(config);
 
-  // 热搜板块选择
+  // 热搜板块选择（三选一）
   const hotModule = config.hotModule || 'douyin';
   let hotData = null;
   let isBangumi = false;
@@ -162,7 +162,14 @@ export async function generateDaily(config = {}) {
   }
 
   const templateData = {
-    ...baseData,
+    // 固定模块数据
+    date: baseData.date,
+    moyuData: baseData.moyuData,
+    zhihuHot: baseData.zhihuHot,
+    worldNews: baseData.worldNews,
+    itNews: baseData.itNews,
+    generatedAt: baseData.generatedAt,
+    // 配置项
     logoBase64,
     customTitle: config.customTitle || '芙芙心日报',
     logoSize: config.logoSize || '',
@@ -172,6 +179,7 @@ export async function generateDaily(config = {}) {
     secondaryTitleFontSize: config.secondaryTitleFontSize || '',
     contentFont: config.contentFont || 'Content.ttf',
     contentFontSize: config.contentFontSize || '',
+    // 热点数据（三选一）
     isBangumi,
     isToutiao,
     douyinHotList: hotModule === 'douyin' ? hotData : [],
