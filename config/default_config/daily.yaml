@@ -11,8 +11,26 @@ secondaryTitleFont: "Secondary_Title.ttf"
 secondaryTitleFontSize: ""
 contentFont: "Content.ttf"
 contentFontSize: ""
+# 下方热搜板块（抖音热搜 / 今日新番 / 头条热搜）三选一
 hotModule: "douyin"
+# 侧栏话题模块（知乎话题榜 / 哔哩哔哩热搜）二选一
+sideModule: "zhihu"
+# 渲染像素倍率（2 = 两倍图，1 = 原尺寸），仅在渲染后端不支持设备像素比时生效
+renderScale: 2
+# 图片压缩：compressImage 为 false 时直接输出原图；格式支持 png(无损) / jpeg / webp，quality 仅对 jpeg、webp 生效
+compressImage: true
+compressFormat: "png"
+compressQuality: 80
+# 各数据源的 API 地址，留空则自动在内置公共实例里挑选可用的
 apiBase:
-  bangumi: "https://api.bgm.tv"
   viki: "https://60s.viki.moe"
+  news60s: ""
+  moyu: ""
+  zhihu: ""
+  itNews: ""
+  douyin: ""
+  toutiao: ""
+  # 主域 60s.viki.moe 的 /v2/bili 长期返回 500，这里默认用实测可用的公共实例
+  bilibili: "https://60s.7se.cn"
+  bangumi: "https://api.bgm.tv"
 theme: "blue"

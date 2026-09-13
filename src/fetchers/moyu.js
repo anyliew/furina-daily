@@ -1,5 +1,7 @@
 // src/fetchers/moyu.js
 import { getWithRetry } from '../utils/retry.js';
+import { requestWithFallback } from '../utils/apiBase.js';
+import { readMock } from '../mock/store.js';
 import { getMockMoyuData } from '../mock/moyu.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
 
@@ -95,28 +97,31 @@ export function parseMoyuText(text) {
   return result;
 }
 
-export async function fetchMoyuData(config = {}) {
-  const base = config.apiBase?.viki || 'https://60s.viki.moe';
-  const url = `${base}/v2/moyu`;
-  const requestConfig = {
-    timeout: 15000,
-    params: { encoding: 'text' },
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Accept': 'text/plain, */*'
-    }
-  };
+const HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Accept': 'text/plain, */*'
+};
 
+export async function fetchMoyuData(config = {}, options = {}) {
   try {
-    const res = await getWithRetry(url, requestConfig, 3, 3000);
-    if (typeof res.data === 'string') {
-      logSuccess('摸鱼日历 API (文本)');
-      return parseMoyuText(res.data);
-    }
-    throw new Error('非文本格式');
+    return await requestWithFallback(config, 'moyu', async (base) => {
+      const res = await getWithRetry(`${base}/v2/moyu`, {
+        timeout: 12000,
+        params: { encoding: 'text' },
+        headers: HEADERS
+      }, 1, 1500);
+      if (typeof res.data === 'string') {
+        logSuccess('摸鱼日历 API (文本)');
+        return parseMoyuText(res.data);
+      }
+      throw new Error('非文本格式');
+    });
   } catch (e) {
     logger.error(`[furina-daily] 摸鱼日历 API 请求失败: ${e.message}`);
     if (e.code) logger.error(`错误代码: ${e.code}`);
+    if (options.useMock === false) throw e;
+    const saved = await readMock('moyu');
+    if (saved) return saved;
     logFailure('摸鱼日历 API', true);
     return getMockMoyuData();
   }

@@ -4,7 +4,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import schedule from 'node-schedule'
 import Config from './config.js'
-import { generateDaily, closeBrowser } from '../src/index.js'
+import { generateDaily, closeBrowser, resolveCompress } from '../src/index.js'
+import { generateMockData } from '../src/mockGenerator.js'
+import { getMockStatus } from '../src/mock/store.js'
+import { getCurrentBase } from '../src/utils/apiBase.js'
 
 const { default: Plugin } = await import('../../../lib/plugins/plugin.js')
 
@@ -56,9 +59,9 @@ function removeReportGroup(groupId) {
   return true
 }
 
-async function generateAndGetImage(forceRefresh = false) {
+async function generateAndGetImage(forceRefresh = false, options = {}) {
   const today = getTodayStr()
-  if (!forceRefresh && cachedImagePath && cachedDate === today && fs.existsSync(cachedImagePath)) {
+  if (!forceRefresh && !options.useMock && cachedImagePath && cachedDate === today && fs.existsSync(cachedImagePath)) {
     logger.debug(`[furina-daily] 使用今日缓存: ${cachedImagePath}`)
     return cachedImagePath
   }
@@ -69,9 +72,15 @@ async function generateAndGetImage(forceRefresh = false) {
   }
   isGenerating = true
   try {
-    logger.mark('[furina-daily] 开始生成芙芙日报...')
-    const imagePath = await generateDaily(config)
+    logger.mark(`[furina-daily] 开始生成芙芙日报${options.useMock ? '（模拟数据）' : ''}...`)
+    const imagePath = await generateDaily(config, {
+      useMock: options.useMock === true,
+      compress: resolveCompress(config)
+    })
     logger.mark(`[furina-daily] 日报生成成功: ${imagePath}`)
+
+    // 模拟日报只是预览，不占用今日缓存，否则会把模拟图当正式日报发出去
+    if (options.useMock) return imagePath
 
     try {
       const dir = path.dirname(imagePath)
@@ -187,6 +196,12 @@ export default class furinaDaily extends Plugin {
         { reg: "^日报切换抖音热搜$", fnc: "switchDouyin" },
         { reg: "^日报切换今日新番$", fnc: "switchBangumi" },
         { reg: "^日报切换头条热搜$", fnc: "switchToutiao" },
+        { reg: /^日报切换(知乎话题榜|知乎)$/i, fnc: "switchZhihu" },
+        { reg: /^日报切换(b站热搜|哔哩哔哩热搜|bili)$/i, fnc: "switchBilibili" },
+        { reg: /^日报压缩\s*(开|关|on|off)?$/i, fnc: "toggleCompress" },
+        { reg: /^日报模拟数据生成$/, fnc: "buildMockData" },
+        { reg: /^日报模拟$/, fnc: "mockDaily" },
+        { reg: /^日报数据源$/, fnc: "showApiStatus" },
         { reg: /^日报主题切换\s*(.*)$/, fnc: "switchTheme" }
       ]
     })
@@ -340,5 +355,127 @@ export default class furinaDaily extends Plugin {
     }
     await e.reply('❌ 主题名称错误，可用主题：芙芙蓝色、真寻粉色。示例：日报主题切换 芙芙蓝色')
     return false
+  }
+
+  // ---------- 侧栏话题模块：知乎话题榜 / 哔哩哔哩热搜 二选一 ----------
+
+  async switchZhihu(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令')
+      return false
+    }
+    if (config.sideModule === 'zhihu') {
+      await e.reply('当前侧栏已是知乎话题榜，无需切换')
+      return true
+    }
+    config.sideModule = 'zhihu'
+    Config.set(config)
+    logger.mark('[furina-daily] 侧栏已切换至知乎话题榜')
+    await e.reply('✅ 侧栏已切换为知乎话题榜，下次生成日报时生效')
+    return true
+  }
+
+  async switchBilibili(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令')
+      return false
+    }
+    if (config.sideModule === 'bilibili') {
+      await e.reply('当前侧栏已是哔哩哔哩热搜，无需切换')
+      return true
+    }
+    config.sideModule = 'bilibili'
+    Config.set(config)
+    logger.mark('[furina-daily] 侧栏已切换至哔哩哔哩热搜')
+    await e.reply('✅ 侧栏已切换为哔哩哔哩热搜，下次生成日报时生效')
+    return true
+  }
+
+  // ---------- 图片压缩开关 ----------
+
+  async toggleCompress(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令')
+      return false
+    }
+    const msg = e.msg || e.message || ''
+    const arg = (msg.match(/^日报压缩\s*(开|关|on|off)?\s*$/i)?.[1] || '').toLowerCase()
+    const current = config.compressImage !== false && config.compressImage !== 'false'
+    const enable = arg ? (arg === '开' || arg === 'on') : !current
+
+    config.compressImage = enable
+    Config.set(config)
+    logger.mark(`[furina-daily] 图片压缩已${enable ? '开启' : '关闭'}`)
+
+    const format = String(config.compressFormat || 'png').toUpperCase()
+    const extra = enable && format !== 'PNG' ? `，质量 ${config.compressQuality || 80}` : ''
+    await e.reply(`✅ 日报图片压缩已${enable ? '开启' : '关闭'}（格式 ${format}${extra}），下次生成日报时生效`)
+    return true
+  }
+
+  // ---------- 模拟数据 ----------
+
+  async buildMockData(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令')
+      return false
+    }
+    await e.reply('🔄 正在抓取今日数据并写入模拟数据（含封面图片），请稍候...')
+    try {
+      const result = await generateMockData(config)
+      const lines = [
+        `✅ 模拟数据已更新（${result.generatedAt}）`,
+        `📥 抓取成功：${result.ok.join('、') || '无'}`,
+        `🖼️ 图片资源：${result.images} 张`
+      ]
+      if (result.failed.length) {
+        lines.push(`⚠️ 失败：${result.failed.map(f => `${f.label}(${f.reason})`).join('；')}`)
+      }
+      const status = await getMockStatus()
+      lines.push(`📁 共 ${status.items.filter(i => i.has).length}/${status.items.length} 个模块有数据`)
+      await e.reply(lines.join('\n'))
+    } catch (err) {
+      logger.error(`[furina-daily] 模拟数据生成失败: ${err.message}`)
+      await e.reply(`❌ 模拟数据生成失败：${err.message}`)
+    }
+    return true
+  }
+
+  async mockDaily(e) {
+    if (!e.isMaster) {
+      await e.reply('❌ 仅BOT主人可使用此命令')
+      return false
+    }
+    const status = await getMockStatus()
+    if (!status.items.some(i => i.has)) {
+      await e.reply('⚠️ 还没有模拟数据，请先发送「日报模拟数据生成」')
+      return true
+    }
+    await e.reply('🔄 正在用模拟数据生成日报...')
+    const imagePath = await generateAndGetImage(true, { useMock: true })
+    if (imagePath) {
+      await e.reply(segment.image(imagePath))
+    } else {
+      await e.reply('❌ 模拟日报生成失败。')
+    }
+    return true
+  }
+
+  // ---------- 数据源状态 ----------
+
+  async showApiStatus(e) {
+    const rows = [
+      ['60S 读世界', 'news60s'],
+      ['摸鱼日历', 'moyu'],
+      ['知乎话题榜', 'zhihu'],
+      ['哔哩哔哩热搜', 'bilibili'],
+      ['IT 资讯', 'itNews'],
+      ['抖音热搜', 'douyin'],
+      ['头条热搜', 'toutiao'],
+      ['今日新番', 'bangumi']
+    ]
+    const text = rows.map(([label, key]) => `${label}：${getCurrentBase(config, key)}`).join('\n')
+    await e.reply(`🌐 当前数据源\n${text}\n（请求失败会自动切换到内置实例）`)
+    return true
   }
 }

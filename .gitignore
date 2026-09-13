@@ -7,3 +7,6 @@ pnpm-lock.yaml
 temp/
 package-lock.json
 .package-lock.json
+
+# 模拟数据图片（由「日报模拟数据生成」抓取，属运行时产物）
+resources/mock/images/

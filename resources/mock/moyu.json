@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-13",
+  "weekday": "星期日",
+  "lunar": "二零二六年 八月初三",
+  "zodiacYear": "马年 丙午",
+  "holidayStatus": "Sunday",
+  "holidayRemaining": 1,
+  "lunarFestival": "灶君生日",
+  "countdowns": [
+    {
+      "name": "中秋",
+      "days": 12,
+      "isHighlight": true
+    },
+    {
+      "name": "周末",
+      "days": 6,
+      "isHighlight": false
+    },
+    {
+      "name": "月底",
+      "days": 17,
+      "isHighlight": false
+    },
+    {
+      "name": "年底",
+      "days": 109,
+      "isHighlight": false
+    }
+  ],
+  "progress": {
+    "week": 100,
+    "month": 43,
+    "year": 70
+  },
+  "nextPayday": {
+    "name": "中秋",
+    "date": "2026-09-25",
+    "duration": 3,
+    "noWorkAdjust": true
+  },
+  "motto": "摸鱼使我快乐，加班令我痛苦。人生在世，当然要追求快乐啊！"
+}

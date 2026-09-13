@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { existsSync, mkdirSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import puppeteer from 'puppeteer'
+import { renderHtmlToImage } from '../src/index.js'
 
 const { default: Plugin } = await import('../../../lib/plugins/plugin.js')
 
@@ -93,14 +93,26 @@ async function buildHelpHtml(logoBase64) {
       ]
     },
     {
-      name: '主题与热搜',
-      desc: '切换主题或热搜板块（仅主人）',
+      name: '主题与板块',
+      desc: '切换主题、热搜板块或侧栏话题（仅主人）',
       commands: [
         { cmd: '日报主题切换 芙芙蓝色', desc: '使用蓝色默认主题' },
         { cmd: '日报主题切换 真寻粉色', desc: '使用粉色真寻主题' },
-        { cmd: '日报切换抖音热搜', desc: '热搜板块切换为抖音热搜' },
-        { cmd: '日报切换今日新番', desc: '热搜板块切换为今日新番' },
-        { cmd: '日报切换头条热搜', desc: '热搜板块切换为头条热搜' }
+        { cmd: '日报切换抖音热搜', desc: '下方大图区切换为抖音热搜' },
+        { cmd: '日报切换今日新番', desc: '下方大图区切换为今日新番' },
+        { cmd: '日报切换头条热搜', desc: '下方大图区切换为头条热搜' },
+        { cmd: '日报切换知乎话题榜', desc: '侧栏显示知乎话题榜' },
+        { cmd: '日报切换B站热搜', desc: '侧栏显示哔哩哔哩热搜' }
+      ]
+    },
+    {
+      name: '图片与数据',
+      desc: '压缩开关、模拟数据与数据源（仅主人）',
+      commands: [
+        { cmd: '日报压缩 开/关', desc: '开启或关闭日报图片压缩，不带参数则切换' },
+        { cmd: '日报模拟数据生成', desc: '抓取今日真实数据写入模拟数据（含封面图）' },
+        { cmd: '日报模拟', desc: '用已保存的模拟数据生成一份日报' },
+        { cmd: '日报数据源', desc: '查看各模块当前实际使用的 API 地址' }
       ]
     },
     {
@@ -266,22 +278,9 @@ async function buildHelpHtml(logoBase64) {
 }
 
 async function htmlToImageFile(html, outputPath) {
-  let browser = null
-  try {
-    browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: 'new'
-    })
-    const page = await browser.newPage()
-    await page.setViewport({ width: 640, height: 480, deviceScaleFactor: 2 })
-    await page.setContent(html, { waitUntil: 'networkidle0' })
-    const bodyHeight = await page.evaluate(() => document.body.scrollHeight)
-    await page.setViewport({ width: 640, height: bodyHeight + 30, deviceScaleFactor: 2 })
-    await page.screenshot({ path: outputPath, type: 'png', fullPage: true })
-    return outputPath
-  } finally {
-    if (browser) await browser.close()
-  }
+  // 交给框架渲染后端出图（puppeteer / shotium 均可），不再自己拉起 chromium
+  // 帮助页 body 为 640 宽（600 容器 + 左右 20 padding），2 倍像素输出
+  return await renderHtmlToImage(html, outputPath, { scale: 2, width: 640 })
 }
 
 let generating = false

@@ -1,11 +1,14 @@
 <div class="module">
   <div class="module-title">
     <span class="icon"><img src="../svg/bilibili.svg" alt=""></span>
-    <span>B 站热点</span>
+    <span>哔哩哔哩热搜</span>
   </div>
   <ul class="hot-list">
     {% for item in bilibiliHot %}
-    <li class="hot-item"><span class="hot-tag">热</span><span class="hot-title">{{ item.title }}</span></li>
+    <li class="hot-item">
+      <span class="hot-tag">{{ item.rank }}</span>
+      <span class="hot-title">{{ item.title }}</span>
+    </li>
     {% endfor %}
   </ul>
 </div>

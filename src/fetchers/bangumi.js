@@ -1,23 +1,32 @@
 // plugins/furina-daily/src/fetchers/bangumi.js (支持自定义 API 地址)
+import { requestWithFallback } from '../utils/apiBase.js';
+import { readMock } from '../mock/store.js';
+
 const WEEKDAY_CN = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 const EPISODE_LIMIT = 100;
 const EPISODE_CONCURRENCY = 4;
 const MAX_EPISODE_PAGES = 5;
 
-function getBangumiApiBase(config = {}) {
-  return config.apiBase?.bangumi || 'https://api.bgm.tv';
-}
-
-export async function getTodayBangumi(config = {}) {
-  const base = getBangumiApiBase(config);
-  const calendar = await fetchCalendar(base);
-  const day = pickCalendarDay(calendar, new Date());
-  if (!day) {
-    throw new Error('没有找到今天的番剧日历数据');
+export async function getTodayBangumi(config = {}, options = {}) {
+  try {
+    // 地址可在锅巴面板的「新番 API 地址」单独指定，失败则回退内置地址
+    return await requestWithFallback(config, 'bangumi', async (base) => {
+      const calendar = await fetchCalendar(base);
+      const day = pickCalendarDay(calendar, new Date());
+      if (!day) {
+        throw new Error('没有找到今天的番剧日历数据');
+      }
+      const data = normalizeCalendarDay(day, new Date());
+      data.items = await enrichItemsWithEpisodeInfo(data.items, base);
+      return data;
+    });
+  } catch (err) {
+    if (options.useMock !== false) {
+      const saved = await readMock('bangumi');
+      if (saved) return saved;
+    }
+    throw err;
   }
-  const data = normalizeCalendarDay(day, new Date());
-  data.items = await enrichItemsWithEpisodeInfo(data.items, base);
-  return data;
 }
 
 async function fetchCalendar(base) {

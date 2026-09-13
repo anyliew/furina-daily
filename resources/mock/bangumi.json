@@ -1,0 +1,135 @@
+{
+  "weekday": {
+    "en": "Mon",
+    "cn": "星期一",
+    "ja": "月耀日",
+    "id": 1
+  },
+  "weekdayText": "星期一",
+  "dateText": "2026年09月14日星期一",
+  "generatedAt": "01:48",
+  "total": 13,
+  "items": [
+    {
+      "id": 456080,
+      "displayName": "转学后班上的清纯可爱美少女，竟是小时候玩在一起的哥们儿",
+      "subName": "転校先の清楚可憐な美少女が、昔男子と思って一緒に遊んだ幼馴染だった件",
+      "image": "bangumi-1.jpg",
+      "scoreText": "5.0",
+      "rankText": "Rank 9796",
+      "doingText": "2147",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/456080"
+    },
+    {
+      "id": 456081,
+      "displayName": "最强废渣皇子暗中活跃于帝位之争",
+      "subName": "最強出涸らし皇子の暗躍帝位争い",
+      "image": "bangumi-2.jpg",
+      "scoreText": "5.2",
+      "rankText": "Rank 8991",
+      "doingText": "768",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/456081"
+    },
+    {
+      "id": 528828,
+      "displayName": "骸骨骑士大人异世界冒险中 第二季",
+      "subName": "骸骨騎士様、只今異世界へお出掛け中Ⅱ",
+      "image": "bangumi-3.jpg",
+      "scoreText": "5.2",
+      "rankText": "Rank 9123",
+      "doingText": "1229",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/528828"
+    },
+    {
+      "id": 569116,
+      "displayName": "碧蓝之海 第三季",
+      "subName": "ぐらんぶる Season 3",
+      "image": "bangumi-4.jpg",
+      "scoreText": "7.1",
+      "rankText": "Rank 2124",
+      "doingText": "8007",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/569116"
+    },
+    {
+      "id": 569671,
+      "displayName": "斗球女弹子",
+      "subName": "炎の闘球女 ドッジ弾子",
+      "image": "bangumi-5.jpg",
+      "scoreText": "6.0",
+      "rankText": "",
+      "doingText": "165",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/569671"
+    },
+    {
+      "id": 579246,
+      "displayName": "暴怒千金发誓复仇。～凭借魔导书之力打垮祖国～",
+      "subName": "ブチ切れ令嬢は報復を誓いました。～魔導書の力で祖国を叩き潰します～",
+      "image": "bangumi-6.jpg",
+      "scoreText": "4.6",
+      "rankText": "Rank 9902",
+      "doingText": "862",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/579246"
+    },
+    {
+      "id": 590786,
+      "displayName": "『你们先走我断后』，于是10年后我成为了传说",
+      "subName": "ここは俺に任せて先に行けと言ってから10年がたったら伝説になっていた。",
+      "image": "bangumi-7.jpg",
+      "scoreText": "5.6",
+      "rankText": "Rank 8902",
+      "doingText": "1979",
+      "airDate": "2026-07-06",
+      "episodeText": "",
+      "url": "https://bgm.tv/subject/590786"
+    },
+    {
+      "id": 595884,
+      "displayName": "蜘蛛侠与他的神奇朋友们 第五季",
+      "subName": "Marvel's Spidey and His Amazing Friends Season 5",
+      "image": "bangumi-8.jpg",
+      "scoreText": "暂无",
+      "rankText": "",
+      "doingText": "0",
+      "airDate": "2026-07-13",
+      "episodeText": "",
+      "url": "https://bgm.tv/subject/595884"
+    },
+    {
+      "id": 607340,
+      "displayName": "与奔驰于透明之夜的你，谈一场看不见的恋爱。",
+      "subName": "透明な夜に駆ける君と、目に見えない恋をした。",
+      "image": "bangumi-9.jpg",
+      "scoreText": "7.0",
+      "rankText": "Rank 2719",
+      "doingText": "3483",
+      "airDate": "2026-07-06",
+      "episodeText": "第 11 话",
+      "url": "https://bgm.tv/subject/607340"
+    },
+    {
+      "id": 607933,
+      "displayName": "万古至尊：李云霄传",
+      "subName": "",
+      "image": "bangumi-10.jpg",
+      "scoreText": "2.0",
+      "rankText": "",
+      "doingText": "2",
+      "airDate": "2026-07-20",
+      "episodeText": "",
+      "url": "https://bgm.tv/subject/607933"
+    }
+  ],
+  "bgImage": "https://lain.bgm.tv/pic/cover/l/ce/e2/456080_C4q4C.jpg"
+}
