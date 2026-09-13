@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import yaml from 'js-yaml'
 import { fileURLToPath } from 'url'
 
@@ -54,6 +55,44 @@ class Config {
     const def = this._readDefaultConfig()
     const user = this._readUserConfig()
     return deepMerge(def, user)
+  }
+
+  /**
+   * 只把 source 中「target 没有」的键补进 target，绝不覆盖用户已有值；
+   * 遇到两边都是普通对象则递归。用于把默认配置的新增字段合并进用户配置。
+   * （参考 yenai-plugin 的 mergeCfg：仅注入缺字段，不破坏用户自定义值）
+   */
+  _mergeNewKeys(target, source) {
+    for (const key of Object.keys(source)) {
+      const sVal = source[key]
+      if (!Object.prototype.hasOwnProperty.call(target, key)) {
+        target[key] = sVal
+      } else if (
+        sVal && typeof sVal === 'object' && !Array.isArray(sVal) &&
+        target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])
+      ) {
+        this._mergeNewKeys(target[key], sVal)
+      }
+    }
+    return target
+  }
+
+  /** 找出用户配置中存在、但默认配置已移除的字段（可能已废弃），递归返回完整路径 */
+  _findDeprecated(target, source, prefix = '') {
+    const deprecated = []
+    for (const key of Object.keys(target)) {
+      const tVal = target[key]
+      const fullKey = prefix ? `${prefix}.${key}` : key
+      if (!Object.prototype.hasOwnProperty.call(source, key)) {
+        deprecated.push(fullKey)
+      } else if (
+        tVal && typeof tVal === 'object' && !Array.isArray(tVal) &&
+        source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])
+      ) {
+        deprecated.push(...this._findDeprecated(tVal, source[key], fullKey))
+      }
+    }
+    return deprecated
   }
 
   _startWatch() {
@@ -119,19 +158,38 @@ class Config {
 
     this._config = this._readAndMerge()
 
+    // 检测默认配置是否更新，自动合并新增字段到用户配置
+    // （参考 yenai-plugin 的 mergeCfg：用默认配置内容的 hash 作为是否变动的标记，
+    //  仅把默认里「用户没有」的字段补进用户配置，绝不覆盖用户已设置的值）
     try {
-      const defMtime = fs.statSync(DEFAULT_CONFIG).mtimeMs
-      const userMtime = fs.existsSync(USER_CONFIG) ? fs.statSync(USER_CONFIG).mtimeMs : 0
-      if (defMtime > userMtime) {
-        logger.mark('[furina-daily] 默认配置已更新，正在自动合并...')
-        const def = this._readDefaultConfig()
-        const user = this._readUserConfig()
-        const merged = deepMerge(def, user)
-        fs.writeFileSync(USER_CONFIG, yaml.dump(merged), 'utf8')
-        this._config = merged
+      const defRaw = fs.readFileSync(DEFAULT_CONFIG, 'utf8')
+      const defHash = crypto.createHash('sha256').update(defRaw).digest('hex')
+      const markPath = path.join(userDir, '.furina_merge_marker')
+      let storedHash = ''
+      try { storedHash = fs.readFileSync(markPath, 'utf8').trim() } catch {}
+
+      if (defHash !== storedHash) {
+        const def = yaml.load(defRaw) || {}
+        // 允许在默认配置里用 autoMerge: false 关闭自动合并
+        if (def.autoMerge !== false) {
+          const user = this._readUserConfig()
+          const before = JSON.stringify(user)
+          this._mergeNewKeys(user, def)
+          const after = JSON.stringify(user)
+          const deprecated = this._findDeprecated(user, def)
+          if (after !== before) {
+            fs.writeFileSync(USER_CONFIG, yaml.dump(user), 'utf8')
+            logger.mark('[furina-daily] 检测到默认配置更新，已自动合并新增字段到用户配置')
+          }
+          if (deprecated.length) {
+            logger.warn(`[furina-daily] 用户配置中存在默认配置已移除的字段（建议清理）：${deprecated.join(', ')}`)
+          }
+        }
+        // 无论是否合并，都更新标记，避免每次重启重复比对
+        fs.writeFileSync(markPath, defHash, 'utf8')
       }
     } catch (e) {
-      logger.error('[furina-daily] 合并配置时出错:', e.message)
+      logger.error('[furina-daily] 合并默认配置时出错:', e.message)
     }
 
     this._startWatch()

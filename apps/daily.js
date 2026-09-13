@@ -39,6 +39,12 @@ let isGenerating = false
 let cachedImagePath = null
 let cachedDate = ''
 
+/** 配置变更后让「今日缓存」失效，确保下次手动/定时生成时用新配置出图（否则会一直返回当天旧图） */
+function invalidateDailyCache() {
+  cachedImagePath = null
+  cachedDate = ''
+}
+
 function getTodayStr() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -277,6 +283,7 @@ export default class furinaDaily extends Plugin {
       logger.mark('[furina-daily] 配置已重置为默认')
 
       config = Config.init()
+      invalidateDailyCache()
       scheduleTasks()
 
       await e.reply(`✅ 日报配置已重置为默认，原配置备份为 ${backupName}`)
@@ -314,6 +321,7 @@ export default class furinaDaily extends Plugin {
     }
     config.hotModule = 'bangumi'
     Config.set(config)
+    invalidateDailyCache()
     logger.mark('[furina-daily] 已切换至今日新番')
     await e.reply('✅ 已切换为今日新番，下次生成日报时生效')
     return true
@@ -344,12 +352,14 @@ export default class furinaDaily extends Plugin {
     if (/芙芙蓝色/.test(msg)) {
       config.theme = 'blue'
       Config.set(config)
+      invalidateDailyCache()
       await e.reply('✅ 已切换至主题【芙芙蓝色】，下次生成日报时生效')
       return true
     }
     if (/真寻粉色/.test(msg)) {
       config.theme = 'pink'
       Config.set(config)
+      invalidateDailyCache()
       await e.reply('✅ 已切换至主题【真寻粉色】，下次生成日报时生效')
       return true
     }
