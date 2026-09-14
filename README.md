@@ -34,10 +34,10 @@
 - **热搜板块**：下方大图区可切换「抖音热搜 / 今日新番（Bangumi）/ 头条热搜」，锅巴面板或指令随时更换
 - **侧栏话题**：摸鱼日历旁的话题模块二选一 —— 「知乎话题榜」或「哔哩哔哩热搜」
 - **主题切换**：内置「芙芙蓝色」「真寻粉色」双主题，锅巴或指令一键切换
-- **图片压缩**：可开关日报图片压缩，支持 PNG（无损）/ JPEG / WebP，JPEG、WebP 可调质量 1-100；指令「日报压缩 开/关」即时切换
+- **图片压缩**：可开关日报图片压缩，支持 PNG（无压缩）/ PNG（无损）/ JPEG / WebP，JPEG、WebP 可调质量 1-100；指令「日报压缩 开/关」即时切换
 - **自定义 API**：新闻、摸鱼、知乎、B站、IT、抖音、头条、新番每个数据源都能单独填 API 地址；请求失败会自动切换到内置公共实例
-- **模拟数据**：「日报模拟数据生成」抓取今日真实数据（含封面图）存入 `resources/mock`，断网时自动兜底；「日报模拟」用模拟数据出一份日报
-- **锅巴适配**：支持在 Guoba-Plugin 管理面板中可视化配置推送群、时间、热搜、主题、API 地址等
+- **渲染预览**：指令「日报模拟」读取插件内置的 `resources/mock` 示例数据出一份日报（不联网、不占用今日缓存、可反复执行），用于快速预览主题 / 板块 / 侧栏 / 压缩等渲染效果；同一套示例数据在 API 全部失败时也会自动兜底
+- **锅巴适配**：支持在 Guoba-Plugin 管理面板中可视化配置，且配置项按分类分成「推送配置 / 外观配置 / 内容配置 / 图片配置 / 数据源配置」五个 Tab（同 yenai-plugin 的组织方式），组内再分小节；「日报推送群」可直接从机器人群列表里勾选（支持按群名 / 群号搜索，也能手动输入群号），推送时间使用 Cron 选择器（带常用预设与人类可读释义）
 - **帮助菜单**：生成精美的插件功能说明图片，每日缓存，内容随新功能同步更新
 - **一键更新**：仅需发送指令即可 `git pull` 更新插件（仅 Bot 主人可用）
 - **一键清空配置**：备份当前配置并恢复为默认设置（仅 Bot 主人可用）
@@ -58,8 +58,8 @@ pnpm i
 
 配置文件示例
 ```yaml
-reportGroup:
-  - 123456789       # 推送群号
+reportGroup:                 # 推送群号列表（建议用锅巴面板从群列表中选择）
+  - 123456789
 morningTime: '0 10 * * *'   # 早间推送 Cron 表达式
 eveningTime: '0 22 * * *'   # 晚间推送 Cron 表达式
 customTitle: '芙芙心日报'     # 自定义标题
@@ -71,7 +71,12 @@ secondaryTitleFont: 'Secondary_Title.ttf'
 secondaryTitleFontSize: ''
 contentFont: 'Content.ttf'
 contentFontSize: ''
-hotModule: 'douyin'          # 热搜板块：douyin / bangumi
+hotModule: 'douyin'          # 热搜板块：douyin / bangumi / toutiao
+sideModule: 'zhihu'          # 侧栏话题：zhihu / bilibili
+renderScale: 2               # 渲染像素倍率
+compressImage: true          # 是否压缩日报图片
+compressFormat: 'png'        # png-none / png / jpeg / webp
+compressQuality: 80          # 仅 jpeg、webp 生效
 apiBase:
   bangumi: 'https://api.bgm.tv'
   viki: 'https://60s.viki.moe'
@@ -96,8 +101,13 @@ furina-daily
 │   ├── configInfo.js           # 锅巴配置读写桥接（支持 apiBase、theme 等）
 │   ├── index.js                # 锅巴入口
 │   ├── pluginInfo.js           # 锅巴插件信息
-│   └── schemas
-│       ├── daily.js            # 日报配置表单（含热搜、主题、API地址）
+│   └── schemas                 # 配置面板按分类拆分成多个 Tab（同 yenai-plugin 的做法）
+│       ├── push.js             # 推送配置（推送群、早晚推送时间）
+│       ├── appearance.js       # 外观配置（标题、Logo、字体、主题）
+│       ├── content.js          # 内容配置（热搜板块、侧栏模块）
+│       ├── image.js            # 图片配置（压缩开关/格式/质量、渲染倍率）
+│       ├── api.js              # 数据源配置（通用地址 + 各模块独立地址）
+│       ├── other.js            # 其他配置（默认配置自动合并开关）
 │       └── index.js            # Schema 汇总
 ├── guoba.support.js            # 锅巴插件注册
 ├── index.js                    # 插件入口
@@ -125,6 +135,9 @@ furina-daily
 │   ├── images
 │   │   ├── logo.png            # 日报 Logo
 │   │   └── furina.png          # 芙宁娜图标（帮助用）
+│   ├── mock                    # 本地示例数据（「日报模拟」预览 + API 失败兜底）
+│   │   ├── *.json              # 各模块示例数据
+│   │   └── images/             # 示例封面图
 │   └── svg                     # 模块图标
 │       ├── calendar.svg
 │       ├── bilibili.svg
@@ -132,23 +145,27 @@ furina-daily
 │       ├── it.svg
 │       └── news.svg
 └── src
-    ├── dataFetcher.js          # 数据聚合调度（传递 config）
-    ├── index.js                # Puppeteer 渲染，根据 theme 选择模板
+    ├── dataFetcher.js          # 数据聚合调度（联网抓取 / 本地示例数据）
+    ├── index.js                # 渲染后端适配与出图，按 theme 选择模板
     ├── fetchers                # 各 API 数据获取（支持自定义 base）
     │   ├── news60s.js
     │   ├── moyu.js
+    │   ├── zhihu.js
     │   ├── bilibili.js
     │   ├── bangumi.js          # Bangumi 新番抓取（使用 apiBase.bangumi）
     │   ├── douyin.js
     │   ├── itNews.js
-    │   └── quote.js
-    ├── mock                    # 模拟数据（API 失败时使用）
+    │   └── toutiao.js
+    ├── mock                    # 示例数据仓库与静态兜底数据（API 失败时使用）
+    │   ├── store.js            # resources/mock 读写与图片路径解析
     │   ├── news60s.js
     │   ├── moyu.js
+    │   ├── zhihu.js
     │   ├── bilibili.js
+    │   ├── bangumi.js
     │   ├── douyin.js
     │   ├── itNews.js
-    │   └── quote.js
+    │   └── toutiao.js
     └── utils
         ├── date.js             # 农历与日期工具
         ├── format.js           # 数值格式化

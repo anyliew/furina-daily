@@ -21,6 +21,32 @@ const RENDER_NAME = 'furina-daily';
 /** 布局宽度：body 内容 1360 + 左右 padding 24×2，与旧版 1440 视窗下的实际排版一致 */
 const LAYOUT_WIDTH = 1408;
 
+/**
+ * 压缩格式表：值是 sharp 的处理方式
+ *  - png-none：PNG 无压缩（zlib 仅存储，编码最快、体积最大，方便快速预览出图）
+ *  - png     ：PNG 无损（最大 deflate 压缩，画质与渲染结果完全一致）
+ *  - jpeg    ：JPEG 有损，体积最小
+ *  - webp    ：WebP 有损，体积与画质兼顾
+ */
+const COMPRESS_FORMATS = {
+  'png-none': { ext: '.png', label: 'PNG（无压缩）', apply: p => p.png({ compressionLevel: 0 }) },
+  png: { ext: '.png', label: 'PNG（无损）', apply: p => p.png({ compressionLevel: 9, adaptiveFiltering: true }) },
+  jpeg: { ext: '.jpg', label: 'JPEG（体积最小）', apply: (p, q) => p.flatten({ background: '#ffffff' }).jpeg({ quality: q, mozjpeg: true }) },
+  webp: { ext: '.webp', label: 'WebP（兼顾体积与画质）', apply: (p, q) => p.webp({ quality: q }) }
+};
+
+/** jpg 是 jpeg 的别名，统一归一化，避免配置里写 jpg 时匹配不到 */
+function normalizeFormat(format) {
+  const f = String(format || 'png').toLowerCase();
+  const alias = f === 'jpg' ? 'jpeg' : f;
+  return COMPRESS_FORMATS[alias] ? alias : 'png';
+}
+
+/** 取压缩格式的中文名，用于日志与指令回显 */
+export function compressFormatLabel(format) {
+  return COMPRESS_FORMATS[normalizeFormat(format)].label;
+}
+
 nunjucks.configure(TEMPLATES_DIR, { autoescape: true });
 
 export async function closeBrowser() {
@@ -113,7 +139,7 @@ function clearTplCache(tplFile) {
 /** 按压缩格式修正输出文件扩展名，避免出现内容是 jpeg 却叫 .png 的文件 */
 function withFormatExt(outputPath, format) {
   const ext = path.extname(outputPath).toLowerCase();
-  const wanted = format === 'jpeg' ? '.jpg' : `.${format}`;
+  const wanted = COMPRESS_FORMATS[normalizeFormat(format)].ext;
   if (ext === wanted) return outputPath;
   return outputPath.slice(0, outputPath.length - ext.length) + wanted;
 }
@@ -127,7 +153,7 @@ function withFormatExt(outputPath, format) {
  */
 async function saveImage(buffer, outputPath, compress = {}) {
   const raw = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
-  const format = String(compress.format || 'png').toLowerCase();
+  const format = normalizeFormat(compress.format);
   const quality = Math.min(100, Math.max(1, Number(compress.quality) || 80));
   const target = withFormatExt(outputPath, format);
 
@@ -139,19 +165,10 @@ async function saveImage(buffer, outputPath, compress = {}) {
     return target;
   }
 
-  let pipeline = sharp(raw);
-  if (format === 'jpeg' || format === 'jpg') {
-    pipeline = pipeline.flatten({ background: '#ffffff' }).jpeg({ quality, mozjpeg: true });
-  } else if (format === 'webp') {
-    pipeline = pipeline.webp({ quality });
-  } else {
-    pipeline = pipeline.png({ compressionLevel: 9, adaptiveFiltering: true, palette: true });
-  }
-
-  const out = await pipeline.toBuffer();
+  const out = await COMPRESS_FORMATS[format].apply(sharp(raw), quality).toBuffer();
   await fs.writeFile(target, out);
   console.log(
-    `✅ 图片已生成并压缩: ${target} | ${(raw.length / 1024).toFixed(2)}KB → ${(out.length / 1024).toFixed(2)}KB (-${Math.max(0, Math.round((1 - out.length / raw.length) * 100))}%)`
+    `✅ 图片已生成并压缩 [${COMPRESS_FORMATS[format].label}]: ${target} | ${(raw.length / 1024).toFixed(2)}KB → ${(out.length / 1024).toFixed(2)}KB (-${Math.max(0, Math.round((1 - out.length / raw.length) * 100))}%)`
   );
   return target;
 }
@@ -312,7 +329,7 @@ export function resolveCompress(config = {}, override = {}) {
   const enabled = override.enabled ?? (config.compressImage !== false && config.compressImage !== 'false');
   return {
     enabled,
-    format: String(override.format || config.compressFormat || 'png').toLowerCase(),
+    format: normalizeFormat(override.format || config.compressFormat),
     quality: Number(override.quality || config.compressQuality || 80)
   };
 }
@@ -358,7 +375,7 @@ export async function generateDaily(config = {}, options = {}) {
     if (mockBangumi) {
       hotData = { ...mockBangumi, items: (mockBangumi.items || []).slice(0, 10) };
       isBangumi = true;
-      console.log(`📺 今日新番（模拟数据）: ${hotData.items.length} 部`);
+      console.log(`📺 今日新番（本地示例数据）: ${hotData.items.length} 部`);
     } else {
       try {
         const { getTodayBangumi } = await import('./fetchers/bangumi.js');

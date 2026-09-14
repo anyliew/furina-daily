@@ -44,7 +44,8 @@ export default {
       compressImage: config.compressImage !== false && config.compressImage !== 'false',
       compressFormat: config.compressFormat || 'png',
       compressQuality: config.compressQuality || 80,
-      theme: config.theme || 'blue'
+      theme: config.theme || 'blue',
+      autoMerge: config.autoMerge !== false
     }
     for (const k of API_BASE_FIELDS) {
       const v = apiBase[k]
@@ -74,6 +75,7 @@ export default {
       current.compressFormat = data.compressFormat || 'png'
       current.compressQuality = Number(data.compressQuality) || 80
       current.theme = data.theme || 'blue'
+      current.autoMerge = data.autoMerge ?? true
 
       // apiBase：保留已存在的其它子项，只覆盖表单里出现的字段（关键修复：
       // 旧代码用 current.apiBase = { bangumi, viki } 整体替换，会把其它子项全部清空）

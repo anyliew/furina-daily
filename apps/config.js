@@ -170,23 +170,25 @@ class Config {
 
       if (defHash !== storedHash) {
         const def = yaml.load(defRaw) || {}
-        // 允许在默认配置里用 autoMerge: false 关闭自动合并
-        if (def.autoMerge !== false) {
-          const user = this._readUserConfig()
-          const before = JSON.stringify(user)
-          this._mergeNewKeys(user, def)
-          const after = JSON.stringify(user)
-          const deprecated = this._findDeprecated(user, def)
+        const userCfg = this._readUserConfig()
+        // autoMerge 以「用户配置」为准（可在锅巴面板里开关），未设置时回退默认配置的值
+        const autoMergeEnabled = (userCfg.autoMerge ?? def.autoMerge) !== false
+        if (autoMergeEnabled) {
+          const before = JSON.stringify(userCfg)
+          this._mergeNewKeys(userCfg, def)
+          const after = JSON.stringify(userCfg)
+          const deprecated = this._findDeprecated(userCfg, def)
           if (after !== before) {
-            fs.writeFileSync(USER_CONFIG, yaml.dump(user), 'utf8')
+            fs.writeFileSync(USER_CONFIG, yaml.dump(userCfg), 'utf8')
             logger.mark('[furina-daily] 检测到默认配置更新，已自动合并新增字段到用户配置')
           }
           if (deprecated.length) {
             logger.warn(`[furina-daily] 用户配置中存在默认配置已移除的字段（建议清理）：${deprecated.join(', ')}`)
           }
+          // 仅在真正执行过比对/合并时落标记，保证幂等；
+          // 若关闭了 autoMerge 则不落标记，之后重新开启时仍能补上这次的新增字段
+          fs.writeFileSync(markPath, defHash, 'utf8')
         }
-        // 无论是否合并，都更新标记，避免每次重启重复比对
-        fs.writeFileSync(markPath, defHash, 'utf8')
       }
     } catch (e) {
       logger.error('[furina-daily] 合并默认配置时出错:', e.message)

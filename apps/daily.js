@@ -4,8 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import schedule from 'node-schedule'
 import Config from './config.js'
-import { generateDaily, closeBrowser, resolveCompress } from '../src/index.js'
-import { generateMockData } from '../src/mockGenerator.js'
+import { generateDaily, closeBrowser, resolveCompress, compressFormatLabel } from '../src/index.js'
 import { getMockStatus } from '../src/mock/store.js'
 import { getCurrentBase } from '../src/utils/apiBase.js'
 
@@ -50,17 +49,27 @@ function getTodayStr() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 }
 
+/** 群号统一按字符串比较：锅巴群列表给出的可能是数字，而群消息里的 group_id 也可能是字符串 */
+function normalizeGroupId(id) {
+  return String(id ?? '').trim()
+}
+
 function addReportGroup(groupId) {
-  if (config.reportGroup.includes(groupId)) return false
-  config.reportGroup.push(groupId)
+  const id = normalizeGroupId(groupId)
+  if (!id) return false
+  const list = Array.isArray(config.reportGroup) ? config.reportGroup : (config.reportGroup = [])
+  if (list.some(g => normalizeGroupId(g) === id)) return false
+  list.push(groupId)
   Config.set(config)
   return true
 }
 
 function removeReportGroup(groupId) {
-  const index = config.reportGroup.indexOf(groupId)
+  const id = normalizeGroupId(groupId)
+  const list = Array.isArray(config.reportGroup) ? config.reportGroup : []
+  const index = list.findIndex(g => normalizeGroupId(g) === id)
   if (index === -1) return false
-  config.reportGroup.splice(index, 1)
+  list.splice(index, 1)
   Config.set(config)
   return true
 }
@@ -78,7 +87,7 @@ async function generateAndGetImage(forceRefresh = false, options = {}) {
   }
   isGenerating = true
   try {
-    logger.mark(`[furina-daily] 开始生成芙芙日报${options.useMock ? '（模拟数据）' : ''}...`)
+    logger.mark(`[furina-daily] 开始生成芙芙日报${options.useMock ? '（本地示例数据 · 渲染预览）' : ''}...`)
     const imagePath = await generateDaily(config, {
       useMock: options.useMock === true,
       compress: resolveCompress(config)
@@ -135,7 +144,12 @@ async function sendDailyToAll() {
   const imagePath = await generateAndGetImage()
   if (!imagePath) return
   const bot = Bot
-  for (const groupId of config.reportGroup) {
+  const groups = Array.isArray(config.reportGroup) ? config.reportGroup : []
+  if (!groups.length) {
+    logger.warn('[furina-daily] 推送群列表为空，跳过本次推送')
+    return
+  }
+  for (const groupId of groups) {
     try {
       const group = await bot.pickGroup(groupId)
       await group.sendMsg(segment.image(imagePath))
@@ -205,7 +219,6 @@ export default class furinaDaily extends Plugin {
         { reg: /^日报切换(知乎话题榜|知乎)$/i, fnc: "switchZhihu" },
         { reg: /^日报切换(b站热搜|哔哩哔哩热搜|bili)$/i, fnc: "switchBilibili" },
         { reg: /^日报压缩\s*(开|关|on|off)?$/i, fnc: "toggleCompress" },
-        { reg: /^日报模拟数据生成$/, fnc: "buildMockData" },
         { reg: /^日报模拟$/, fnc: "mockDaily" },
         { reg: /^日报数据源$/, fnc: "showApiStatus" },
         { reg: /^日报主题切换\s*(.*)$/, fnc: "switchTheme" }
@@ -305,6 +318,7 @@ export default class furinaDaily extends Plugin {
     }
     config.hotModule = 'douyin'
     Config.set(config)
+    invalidateDailyCache()
     logger.mark('[furina-daily] 已切换至抖音热搜')
     await e.reply('✅ 已切换为抖音热搜，下次生成日报时生效')
     return true
@@ -338,6 +352,7 @@ export default class furinaDaily extends Plugin {
     }
     config.hotModule = 'toutiao'
     Config.set(config)
+    invalidateDailyCache()
     logger.mark('[furina-daily] 已切换至头条热搜')
     await e.reply('✅ 已切换为头条热搜，下次生成日报时生效')
     return true
@@ -380,6 +395,7 @@ export default class furinaDaily extends Plugin {
     }
     config.sideModule = 'zhihu'
     Config.set(config)
+    invalidateDailyCache()
     logger.mark('[furina-daily] 侧栏已切换至知乎话题榜')
     await e.reply('✅ 侧栏已切换为知乎话题榜，下次生成日报时生效')
     return true
@@ -396,6 +412,7 @@ export default class furinaDaily extends Plugin {
     }
     config.sideModule = 'bilibili'
     Config.set(config)
+    invalidateDailyCache()
     logger.mark('[furina-daily] 侧栏已切换至哔哩哔哩热搜')
     await e.reply('✅ 侧栏已切换为哔哩哔哩热搜，下次生成日报时生效')
     return true
@@ -415,41 +432,17 @@ export default class furinaDaily extends Plugin {
 
     config.compressImage = enable
     Config.set(config)
+    invalidateDailyCache()
     logger.mark(`[furina-daily] 图片压缩已${enable ? '开启' : '关闭'}`)
 
-    const format = String(config.compressFormat || 'png').toUpperCase()
-    const extra = enable && format !== 'PNG' ? `，质量 ${config.compressQuality || 80}` : ''
-    await e.reply(`✅ 日报图片压缩已${enable ? '开启' : '关闭'}（格式 ${format}${extra}），下次生成日报时生效`)
+    const label = compressFormatLabel(config.compressFormat)
+    const lossy = ['jpeg', 'webp'].includes(String(config.compressFormat || 'png').toLowerCase())
+    const extra = enable && lossy ? `，质量 ${config.compressQuality || 80}` : ''
+    await e.reply(`✅ 日报图片压缩已${enable ? '开启' : '关闭'}（格式 ${label}${extra}），下次生成日报时生效`)
     return true
   }
 
-  // ---------- 模拟数据 ----------
-
-  async buildMockData(e) {
-    if (!e.isMaster) {
-      await e.reply('❌ 仅BOT主人可使用此命令')
-      return false
-    }
-    await e.reply('🔄 正在抓取今日数据并写入模拟数据（含封面图片），请稍候...')
-    try {
-      const result = await generateMockData(config)
-      const lines = [
-        `✅ 模拟数据已更新（${result.generatedAt}）`,
-        `📥 抓取成功：${result.ok.join('、') || '无'}`,
-        `🖼️ 图片资源：${result.images} 张`
-      ]
-      if (result.failed.length) {
-        lines.push(`⚠️ 失败：${result.failed.map(f => `${f.label}(${f.reason})`).join('；')}`)
-      }
-      const status = await getMockStatus()
-      lines.push(`📁 共 ${status.items.filter(i => i.has).length}/${status.items.length} 个模块有数据`)
-      await e.reply(lines.join('\n'))
-    } catch (err) {
-      logger.error(`[furina-daily] 模拟数据生成失败: ${err.message}`)
-      await e.reply(`❌ 模拟数据生成失败：${err.message}`)
-    }
-    return true
-  }
+  // ---------- 日报模拟：读取 resources/mock 的本地示例数据出一份日报，仅用于预览渲染效果 ----------
 
   async mockDaily(e) {
     if (!e.isMaster) {
@@ -457,16 +450,18 @@ export default class furinaDaily extends Plugin {
       return false
     }
     const status = await getMockStatus()
-    if (!status.items.some(i => i.has)) {
-      await e.reply('⚠️ 还没有模拟数据，请先发送「日报模拟数据生成」')
+    const hasData = status.items.filter(i => i.has).length
+    if (!hasData) {
+      await e.reply('⚠️ 未找到本地示例数据（resources/mock/*.json），无法生成预览日报。')
       return true
     }
-    await e.reply('🔄 正在用模拟数据生成日报...')
+    await e.reply(`🔄 正在用本地示例数据生成预览日报（${hasData}/${status.items.length} 个模块）...`)
+    // useMock 只读本地数据、不请求网络，也不写入今日缓存，可反复执行用于对比渲染效果
     const imagePath = await generateAndGetImage(true, { useMock: true })
     if (imagePath) {
       await e.reply(segment.image(imagePath))
     } else {
-      await e.reply('❌ 模拟日报生成失败。')
+      await e.reply('❌ 预览日报生成失败，请查看日志。')
     }
     return true
   }

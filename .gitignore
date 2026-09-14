@@ -8,5 +8,5 @@ temp/
 package-lock.json
 .package-lock.json
 
-# 模拟数据图片（由「日报模拟数据生成」抓取，属运行时产物）
-resources/mock/images/
+# 注意：resources/mock 是插件内置的示例数据（含 images/），供指令「日报模拟」预览渲染效果使用，
+# 需要随插件一起提交，因此不在此处忽略。

@@ -1,5 +1,6 @@
 # config/default_config/daily.yaml
-# autoMerge: 默认开启。插件更新后若默认配置新增字段，会自动合并进用户配置（config/config/daily.yaml），不会覆盖你已设置的值。设为 false 可关闭。
+# autoMerge: 默认开启。插件更新后若默认配置新增字段，会自动合并进用户配置（config/config/daily.yaml），不会覆盖你已设置的值。
+# 可在锅巴面板「其他配置」里开关；用户配置里的 autoMerge 优先级高于此处。
 autoMerge: true
 reportGroup: []
 morningTime: "0 10 * * *"
@@ -19,7 +20,8 @@ hotModule: "douyin"
 sideModule: "zhihu"
 # 渲染像素倍率（2 = 两倍图，1 = 原尺寸），仅在渲染后端不支持设备像素比时生效
 renderScale: 2
-# 图片压缩：compressImage 为 false 时直接输出原图；格式支持 png(无损) / jpeg / webp，quality 仅对 jpeg、webp 生效
+# 图片压缩：compressImage 为 false 时直接输出渲染后端返回的原图；
+# 格式支持 png-none(PNG 无压缩) / png(PNG 无损) / jpeg(JPEG) / webp(WebP)，quality 仅对 jpeg、webp 生效
 compressImage: true
 compressFormat: "png"
 compressQuality: 80

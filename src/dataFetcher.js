@@ -68,7 +68,7 @@ export async function fetchAllData(config = {}, options = {}) {
   };
 }
 
-/** 全部走模拟数据（不请求网络），用于「日报模拟」预览与断网兜底 */
+/** 全部走本地示例数据（不请求网络），用于「日报模拟」预览渲染效果 */
 export async function fetchAllMockData(config = {}) {
   const { readMock } = await import('./mock/store.js');
   const { getMockNews60s } = await import('./mock/news60s.js');
@@ -80,7 +80,7 @@ export async function fetchAllMockData(config = {}) {
   const { getMockToutiao } = await import('./mock/toutiao.js');
   const { getDateInfo } = await import('./utils/date.js');
 
-  const [news60s, moyuData, zhihuHot, bilibiliHot, itNews, douyinHot, toutiaoHot] = await Promise.all([
+  const [news60s, moyuRaw, zhihuHot, bilibiliHot, itNews, douyinHot, toutiaoHot] = await Promise.all([
     readMock('news60s').then(v => v || getMockNews60s()),
     readMock('moyu').then(v => v || getMockMoyuData()),
     readMock('zhihu').then(v => v || getMockZhihu()),
@@ -91,8 +91,14 @@ export async function fetchAllMockData(config = {}) {
   ]);
   const bangumi = await readMock('bangumi');
 
+  const dateInfo = getDateInfo();
+  // 示例数据里的日期是录制当天的，预览时用当前日期覆盖，避免日报上出现过期日期
+  const moyuData = (moyuRaw && typeof moyuRaw === 'object' && !Array.isArray(moyuRaw))
+    ? { ...moyuRaw, date: dateInfo.gregorian, weekday: `星期${dateInfo.weekday}`, lunar: dateInfo.lunar }
+    : moyuRaw;
+
   return {
-    date: getDateInfo(),
+    date: dateInfo,
     moyuData,
     zhihuHot,
     bilibiliHot,
