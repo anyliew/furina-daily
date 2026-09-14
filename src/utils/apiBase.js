@@ -77,12 +77,42 @@ export function getPool(module) {
 }
 
 /**
+ * 取某模块配置的前缀式代理（形如 https://<你的代理域名>/），未启用返回空串
+ *
+ * 只有 bangumi 需要：api.bgm.tv 目前境外网络才能直连，国内要靠前缀代理转发。
+ * 代理地址**不内置在代码里**，只作为配置值由用户在锅巴面板填写；留空即直连，行为与改造前完全一致。
+ *
+ * 归一化规则：去首尾空白 → 补尾斜杠（否则会拼出 `https://x.comhttp://...`）；
+ * 非 http(s) 开头（如误填域名、ftp://）一律视为未启用。
+ *
+ * @param {object} config 插件配置
+ * @param {string} module 模块名
+ * @returns {string} 带尾斜杠的代理前缀，或空串
+ */
+export function getProxyPrefix(config, module) {
+  if (module !== 'bangumi') return '';
+  const raw = config?.proxy?.bangumi;
+  if (typeof raw !== 'string') return '';
+  const s = raw.trim();
+  if (!s || !/^https?:\/\//i.test(s)) return '';
+  return s.endsWith('/') ? s : `${s}/`;
+}
+
+/**
  * 取某模块的候选基址数组（已去重，按优先级排序）
  * 顺序：用户为该模块单独填的 > 上次成功的 > 通用基址(apiBase.viki) > 内置池
  * @param {object} config 插件配置
  * @param {string} module 模块名，见 KEYS
  */
 export function getApiBases(config, module) {
+  // 前缀式代理优先：填了就只走这一个通道（用户填它正是因为直连不通，
+  // 再回退直连只会白等一次超时）；目标地址已带该前缀时不重复拼，避免双重前缀
+  const proxy = getProxyPrefix(config, module);
+  if (proxy) {
+    const target = trimSlash(config?.apiBase?.[KEYS[module]]) || getDefaultBase(module);
+    return [target.startsWith(proxy) ? target : proxy + target];
+  }
+
   const custom = trimSlash(config?.apiBase?.[KEYS[module]]);
   const generic = trimSlash(config?.apiBase?.viki);
   const cached = successCache.get(module);

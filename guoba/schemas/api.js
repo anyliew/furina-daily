@@ -93,5 +93,14 @@ export default [
     componentProps: {
       placeholder: 'https://api.bgm.tv'
     }
+  },
+  {
+    field: 'proxy.bangumi',
+    label: '新番代理前缀',
+    component: 'Input',
+    bottomHelpMessage: '留空则直连 Bangumi（境外网络可正常访问）。国内访问不了时填前缀式代理，例如 https://你的代理域名/ —— 填写后新番的接口请求与封面图都会走这个通道（代理地址不内置在插件里，随时可改可清空）。注意：填了这个就只走代理，不再回退直连。',
+    componentProps: {
+      placeholder: 'https://你的代理域名/'
+    }
   }
 ]

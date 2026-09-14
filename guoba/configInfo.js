@@ -47,6 +47,8 @@ export default {
       theme: config.theme || 'blue',
       autoMerge: config.autoMerge !== false
     }
+    const proxy = config.proxy || {}
+    data['proxy.bangumi'] = proxy.bangumi || ''
     for (const k of API_BASE_FIELDS) {
       const v = apiBase[k]
       data[`apiBase.${k}`] = (v == null || v === '') ? API_BASE_DEFAULTS[k] : v
@@ -90,6 +92,12 @@ export default {
         toutiao: data['apiBase.toutiao'] || '',
         bilibili: data['apiBase.bilibili'] || 'https://60s.7se.cn',
         bangumi: data['apiBase.bangumi'] || 'https://api.bgm.tv'
+      }
+
+      // 代理前缀：同样只覆盖表单字段，保留已存在的其它子项
+      current.proxy = {
+        ...(current.proxy || {}),
+        bangumi: data['proxy.bangumi'] || ''
       }
 
       Config.set(current)

@@ -1,5 +1,5 @@
 // plugins/furina-daily/src/fetchers/bangumi.js (支持自定义 API 地址)
-import { requestWithFallback } from '../utils/apiBase.js';
+import { requestWithFallback, getProxyPrefix } from '../utils/apiBase.js';
 import { readMock } from '../mock/store.js';
 
 const WEEKDAY_CN = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
@@ -9,6 +9,8 @@ const MAX_EPISODE_PAGES = 5;
 
 export async function getTodayBangumi(config = {}, options = {}) {
   try {
+    // 封面图代理前缀：与接口走同一个代理通道，留空则直连（见 apiBase.getProxyPrefix）
+    const imageProxy = getProxyPrefix(config, 'bangumi');
     // 地址可在锅巴面板的「新番 API 地址」单独指定，失败则回退内置地址
     return await requestWithFallback(config, 'bangumi', async (base) => {
       const calendar = await fetchCalendar(base);
@@ -16,7 +18,7 @@ export async function getTodayBangumi(config = {}, options = {}) {
       if (!day) {
         throw new Error('没有找到今天的番剧日历数据');
       }
-      const data = normalizeCalendarDay(day, new Date());
+      const data = normalizeCalendarDay(day, new Date(), imageProxy);
       data.items = await enrichItemsWithEpisodeInfo(data.items, base);
       return data;
     });
@@ -75,9 +77,11 @@ function getBangumiWeekdayId(date = new Date()) {
   return day === 0 ? 7 : day;
 }
 
-function normalizeCalendarDay(day, date = new Date()) {
+function normalizeCalendarDay(day, date = new Date(), imageProxy = '') {
   const weekday = day?.weekday || {};
-  const items = Array.isArray(day?.items) ? day.items.map(normalizeItem) : [];
+  const items = Array.isArray(day?.items)
+    ? day.items.map((item) => normalizeItem(item, imageProxy))
+    : [];
   const bgImage = items.find((item) => item.image)?.image || '';
   return {
     weekday,
@@ -90,7 +94,7 @@ function normalizeCalendarDay(day, date = new Date()) {
   };
 }
 
-function normalizeItem(item) {
+function normalizeItem(item, imageProxy = '') {
   const displayName = item?.name_cn || item?.name || '未命名番剧';
   const subName = item?.name_cn && item?.name && item.name_cn !== item.name ? item.name : '';
   const score = Number(item?.rating?.score || 0);
@@ -100,7 +104,7 @@ function normalizeItem(item) {
     id: item?.id,
     displayName,
     subName,
-    image: normalizeImage(item?.images),
+    image: normalizeImage(item?.images, imageProxy),
     scoreText: score > 0 ? score.toFixed(1) : '暂无',
     rankText: rank > 0 ? `Rank ${rank}` : '',
     doingText: formatNumber(doing),
@@ -199,9 +203,28 @@ async function mapLimit(list, limit, handler) {
   return results;
 }
 
-function normalizeImage(images) {
+function normalizeImage(images, proxy = '') {
   if (!images) return '';
-  return toHttps(images.large || images.common || images.medium || images.grid || images.small || '');
+  return toImageUrl(images.large || images.common || images.medium || images.grid || images.small || '', proxy);
+}
+
+/**
+ * 归一化封面图地址
+ * - 代理前缀为空：保持原有行为（http 转 https 后直连）
+ * - 代理前缀非空：拼成「前缀 + 原始完整地址」，且**保留原始的 http://**
+ *   前缀式代理要求原样透传目标协议，再转 https 会变成 `https://前缀/https://...`，反而打不开
+ * @param {string} url 图片原始地址（API 返回的是 http://lain.bgm.tv/...）
+ * @param {string} proxy 已归一化的代理前缀（带尾斜杠），空串表示不代理
+ * @returns {string}
+ */
+function toImageUrl(url, proxy) {
+  if (typeof url !== 'string' || !url) return '';
+  const raw = url.trim();
+  // data: / file: / 相对路径：既不做协议转换也不拼前缀
+  if (!/^https?:\/\//i.test(raw)) return raw;
+  if (!proxy) return toHttps(raw);
+  // 幂等：已经是「前缀 + 地址」时不重复拼
+  return raw.startsWith(proxy) ? raw : proxy + raw;
 }
 
 function toHttps(url) {

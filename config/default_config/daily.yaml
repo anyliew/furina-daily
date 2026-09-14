@@ -37,4 +37,9 @@ apiBase:
   # 主域 60s.viki.moe 的 /v2/bili 长期返回 500，这里默认用实测可用的公共实例
   bilibili: "https://60s.7se.cn"
   bangumi: "https://api.bgm.tv"
+# 新番代理前缀：留空 = 直连 Bangumi（境外网络可正常访问）；
+# 国内访问不了时填前缀式代理（如 https://api.fate.vip/），新番的接口请求与封面图都会走这个通道。
+# 填了就只走代理、不再回退直连；代理地址不内置在插件里，随时可改可清空。
+proxy:
+  bangumi: ""
 theme: "blue"

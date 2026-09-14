@@ -36,6 +36,7 @@
 - **主题切换**：内置「芙芙蓝色」「真寻粉色」双主题，锅巴或指令一键切换
 - **图片压缩**：可开关日报图片压缩，支持 PNG（无压缩）/ PNG（无损）/ JPEG / WebP，JPEG、WebP 可调质量 1-100；指令「日报压缩 开/关」即时切换
 - **自定义 API**：新闻、摸鱼、知乎、B站、IT、抖音、头条、新番每个数据源都能单独填 API 地址；请求失败会自动切换到内置公共实例
+- **新番代理（可选）**：今日新番走的 Bangumi API（`api.bgm.tv`）与其图床目前只能境外网络直连。国内可在锅巴「数据源配置 → 新番代理前缀」填一个前缀式代理（如 `https://api.fate.vip/`），**接口请求与封面图会一起走这个通道**；留空即直连，与不加该功能时完全一致。代理地址不内置在插件里，随时可改可清空（填了之后只走代理，不再回退直连）
 - **渲染预览**：指令「日报模拟」读取插件内置的 `resources/mock` 示例数据出一份日报（不联网、不占用今日缓存、可反复执行），用于快速预览主题 / 板块 / 侧栏 / 压缩等渲染效果；同一套示例数据在 API 全部失败时也会自动兜底
 - **锅巴适配**：支持在 Guoba-Plugin 管理面板中可视化配置，且配置项按分类分成「推送配置 / 外观配置 / 内容配置 / 图片配置 / 数据源配置」五个 Tab（同 yenai-plugin 的组织方式），组内再分小节；「日报推送群」可直接从机器人群列表里勾选（支持按群名 / 群号搜索，也能手动输入群号），推送时间使用 Cron 选择器（带常用预设与人类可读释义）
 - **帮助菜单**：生成精美的插件功能说明图片，每日缓存，内容随新功能同步更新
@@ -80,6 +81,9 @@ compressQuality: 80          # 仅 jpeg、webp 生效
 apiBase:
   bangumi: 'https://api.bgm.tv'
   viki: 'https://60s.viki.moe'
+# 新番代理前缀：留空=直连；国内访问不了 Bangumi 时填 https://api.fate.vip/ 这类前缀式代理
+proxy:
+  bangumi: ''
 theme: 'blue'                # 主题：blue（芙芙蓝色） / pink（真寻粉色）
 ```
 修改后会在几秒内自动重载，无需重启。
@@ -152,7 +156,7 @@ furina-daily
     │   ├── moyu.js
     │   ├── zhihu.js
     │   ├── bilibili.js
-    │   ├── bangumi.js          # Bangumi 新番抓取（使用 apiBase.bangumi）
+    │   ├── bangumi.js          # Bangumi 新番抓取（apiBase.bangumi + 可选 proxy.bangumi 代理）
     │   ├── douyin.js
     │   ├── itNews.js
     │   └── toutiao.js
