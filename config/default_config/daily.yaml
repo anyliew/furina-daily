@@ -18,8 +18,9 @@ contentFontSize: ""
 hotModule: "douyin"
 # 侧栏话题模块（知乎话题榜 / 哔哩哔哩热搜）二选一
 sideModule: "zhihu"
-# 渲染像素倍率（2 = 两倍图，1 = 原尺寸），仅在渲染后端不支持设备像素比时生效
-renderScale: 2
+# 排版密度倍率（CSS zoom）。注意它会与渲染后端的设备像素倍率相乘：
+# shotium scale:2 时填 1 即为 2 倍图（推荐，清晰且体积小）；填 2 会得到 4 倍图，体积约大 4 倍
+renderScale: 1
 # 图片压缩：compressImage 为 false 时直接输出渲染后端返回的原图；
 # 格式支持 png-none(PNG 无压缩) / png(PNG 无损) / jpeg(JPEG) / webp(WebP)，quality 仅对 jpeg、webp 生效
 compressImage: true

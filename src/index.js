@@ -432,7 +432,7 @@ export async function generateDaily(config = {}, options = {}) {
 
   console.log(`🎨 使用模板: ${templateFile}, 输出: ${outputPath}`);
   return await screenshotWithRenderer(templateFile, templateData, outputPath, {
-    scale: Number(config.renderScale) > 0 ? Number(config.renderScale) : 2,
+    scale: Number(config.renderScale) > 0 ? Number(config.renderScale) : 1,
     compress: options.compress || resolveCompress(config)
   });
 }

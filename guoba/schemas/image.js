@@ -48,12 +48,12 @@ export default [
     field: 'renderScale',
     label: '渲染像素倍率',
     component: 'InputNumber',
-    bottomHelpMessage: '2 表示两倍图（默认，更清晰），1 表示原尺寸。仅在渲染后端不支持设备像素比时生效。',
+    bottomHelpMessage: '排版密度倍率（CSS zoom），会与渲染后端的设备像素倍率相乘。默认 1：shotium scale:2 下即为两倍图，清晰且体积小；填 2 会得到 4 倍图，体积约大 4 倍，一般无需调大。',
     componentProps: {
       min: 1,
       max: 4,
       step: 1,
-      placeholder: '2'
+      placeholder: '1'
     }
   }
 ]

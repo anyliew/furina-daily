@@ -74,7 +74,7 @@ contentFont: 'Content.ttf'
 contentFontSize: ''
 hotModule: 'douyin'          # 热搜板块：douyin / bangumi / toutiao
 sideModule: 'zhihu'          # 侧栏话题：zhihu / bilibili
-renderScale: 2               # 渲染像素倍率
+renderScale: 1               # 排版密度倍率（与渲染后端设备像素倍率相乘，shotium scale:2 下填 1 即两倍图）
 compressImage: true          # 是否压缩日报图片
 compressFormat: 'png'        # png-none / png / jpeg / webp
 compressQuality: 80          # 仅 jpeg、webp 生效

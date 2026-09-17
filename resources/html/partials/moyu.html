@@ -15,7 +15,7 @@
     {% endif %}
   </div>
   <div style="margin-bottom: 14px;">
-    <div style="font-weight: 600; margin-bottom: 10px; color: #0a2a3b; letter-spacing: 1px; font-size: 19px;">⏳ 摸鱼倒计时</div>
+    <div style="font-weight: 600; margin-bottom: 10px; color: #0a2a3b; letter-spacing: 1px; font-size: 19px; padding-left: 8px;">⏳ 摸鱼倒计时</div>
     <ul class="countdown-list">
       {% for item in moyuData.countdowns %}
       <li class="countdown-item {% if item.isHighlight %}highlight{% endif %}">
@@ -31,11 +31,11 @@
   </div>
   {% if moyuData.nextPayday %}
   <div class="next-payday-box">
-    <div style="font-weight: 700; font-size: 20px; color: #b8860b;">🎭 下一个带薪摸鱼日</div>
-    <div>🎊 节日：{{ moyuData.nextPayday.name }}</div>
-    <div>📅 日期：{{ moyuData.nextPayday.date }}</div>
-    {% if moyuData.nextPayday.duration %}<div>⏱️ 时长：{{ moyuData.nextPayday.duration }} 天</div>{% endif %}
-    {% if moyuData.nextPayday.noWorkAdjust %}<div>💼 调休：无需调休，优雅摸鱼！</div>{% endif %}
+    <div style="font-weight: 700; font-size: 20px; color: #b8860b;"><span class="pd-ico">🎭</span>下一个带薪摸鱼日</div>
+    <div><span class="pd-ico">🎊</span>节日：{{ moyuData.nextPayday.name }}</div>
+    <div><span class="pd-ico">📅</span>日期：{{ moyuData.nextPayday.date }}</div>
+    {% if moyuData.nextPayday.duration %}<div><span class="pd-ico">⏱️</span>时长：{{ moyuData.nextPayday.duration }} 天</div>{% endif %}
+    {% if moyuData.nextPayday.noWorkAdjust %}<div><span class="pd-ico">💼</span>调休：无需调休，优雅摸鱼！</div>{% endif %}
   </div>
   {% endif %}
 </div>

@@ -40,7 +40,7 @@ export default {
       contentFontSize: config.contentFontSize || '',
       hotModule: config.hotModule || 'douyin',
       sideModule: config.sideModule || 'zhihu',
-      renderScale: config.renderScale || 2,
+      renderScale: config.renderScale || 1,
       compressImage: config.compressImage !== false && config.compressImage !== 'false',
       compressFormat: config.compressFormat || 'png',
       compressQuality: config.compressQuality || 80,
@@ -72,7 +72,7 @@ export default {
       current.contentFontSize = data.contentFontSize || ''
       current.hotModule = data.hotModule || 'douyin'
       current.sideModule = data.sideModule || 'zhihu'
-      current.renderScale = Number(data.renderScale) || 2
+      current.renderScale = Number(data.renderScale) || 1
       current.compressImage = data.compressImage ?? true
       current.compressFormat = data.compressFormat || 'png'
       current.compressQuality = Number(data.compressQuality) || 80
