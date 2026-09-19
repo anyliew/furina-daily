@@ -19,25 +19,12 @@ export default [
     field: 'compressFormat',
     label: '压缩格式',
     component: 'Select',
-    bottomHelpMessage: 'PNG（无压缩）编码最快、体积最大；PNG（无损）画质与渲染结果一致；JPEG / WebP 体积最小但有损。',
+    bottomHelpMessage: '两种均为无损画质。PNG（无损）兼容性最好；WebP（无损）体积更小约 30-40%，个别老旧客户端显示兼容性略逊。',
     componentProps: {
       options: [
-        { label: 'PNG（无压缩）', value: 'png-none' },
         { label: 'PNG（无损）', value: 'png' },
-        { label: 'JPEG（体积最小）', value: 'jpeg' },
-        { label: 'WebP（兼顾体积与画质）', value: 'webp' }
+        { label: 'WebP（无损）', value: 'webp-lossless' }
       ]
-    }
-  },
-  {
-    field: 'compressQuality',
-    label: '压缩质量',
-    component: 'InputNumber',
-    bottomHelpMessage: '1-100，数字越大越清晰、体积越大。仅对 JPEG / WebP 生效。',
-    componentProps: {
-      min: 1,
-      max: 100,
-      placeholder: '80'
     }
   },
   {
@@ -48,7 +35,7 @@ export default [
     field: 'renderScale',
     label: '渲染像素倍率',
     component: 'InputNumber',
-    bottomHelpMessage: '排版密度倍率（CSS zoom），会与渲染后端的设备像素倍率相乘。默认 1：shotium scale:2 下即为两倍图，清晰且体积小；填 2 会得到 4 倍图，体积约大 4 倍，一般无需调大。',
+    bottomHelpMessage: '排版密度倍率（CSS zoom），会与渲染后端的设备像素倍率相乘。默认 1（shotium scale:2 下为 2 倍图，清晰且体积小）；填 2 为 4 倍图，体积约大 4 倍。',
     componentProps: {
       min: 1,
       max: 4,

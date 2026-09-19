@@ -364,21 +364,23 @@ export default class furinaDaily extends Plugin {
       return false
     }
     const msg = e.msg || e.message || ''
-    if (/芙芙蓝色/.test(msg)) {
-      config.theme = 'blue'
-      Config.set(config)
-      invalidateDailyCache()
-      await e.reply('✅ 已切换至主题【芙芙蓝色】，下次生成日报时生效')
-      return true
+    const THEMES = [
+      [/芙芙蓝色/, 'blue', '芙芙蓝色'],
+      [/真寻粉色/, 'pink', '真寻粉色'],
+      [/霜笺白鹭/, 'lu', '霜笺白鹭'],
+      [/绿野青穗/, 'green', '绿野青穗'],
+      [/素白简讯/, 'plain', '素白简讯']
+    ]
+    for (const [re, value, label] of THEMES) {
+      if (re.test(msg)) {
+        config.theme = value
+        Config.set(config)
+        invalidateDailyCache()
+        await e.reply(`✅ 已切换至主题【${label}】，下次生成日报时生效`)
+        return true
+      }
     }
-    if (/真寻粉色/.test(msg)) {
-      config.theme = 'pink'
-      Config.set(config)
-      invalidateDailyCache()
-      await e.reply('✅ 已切换至主题【真寻粉色】，下次生成日报时生效')
-      return true
-    }
-    await e.reply('❌ 主题名称错误，可用主题：芙芙蓝色、真寻粉色。示例：日报主题切换 芙芙蓝色')
+    await e.reply('❌ 主题名称错误，可用主题：芙芙蓝色、真寻粉色、霜笺白鹭、绿野青穗、素白简讯。示例：日报主题切换 霜笺白鹭')
     return false
   }
 
@@ -436,30 +438,54 @@ export default class furinaDaily extends Plugin {
     logger.mark(`[furina-daily] 图片压缩已${enable ? '开启' : '关闭'}`)
 
     const label = compressFormatLabel(config.compressFormat)
-    const lossy = ['jpeg', 'webp'].includes(String(config.compressFormat || 'png').toLowerCase())
-    const extra = enable && lossy ? `，质量 ${config.compressQuality || 80}` : ''
-    await e.reply(`✅ 日报图片压缩已${enable ? '开启' : '关闭'}（格式 ${label}${extra}），下次生成日报时生效`)
+    await e.reply(`✅ 日报图片压缩已${enable ? '开启' : '关闭'}（格式 ${label}），下次生成日报时生效`)
     return true
   }
 
-  // ---------- 日报模拟：读取 resources/mock 的本地示例数据出一份日报，仅用于预览渲染效果 ----------
+  // ---------- 日报模拟：读取 resources/mock 的本地示例数据，按全部主题各出一份「模拟日报」，用于预览 ----------
 
   async mockDaily(e) {
     if (!e.isMaster) {
       await e.reply('❌ 仅BOT主人可使用此命令')
       return false
     }
+    // 五套主题一览（值与 THEME_TEMPLATES / 锅巴选项保持一致）
+    const MOCK_THEMES = [
+      ['blue', '芙芙蓝色'],
+      ['pink', '真寻粉色'],
+      ['lu', '霜笺白鹭'],
+      ['green', '绿野青穗'],
+      ['plain', '素白简讯']
+    ]
     const status = await getMockStatus()
     const hasData = status.items.filter(i => i.has).length
     if (!hasData) {
       await e.reply('⚠️ 未找到本地示例数据（resources/mock/*.json），无法生成预览日报。')
       return true
     }
-    await e.reply(`🔄 正在用本地示例数据生成预览日报（${hasData}/${status.items.length} 个模块）...`)
-    // useMock 只读本地数据、不请求网络，也不写入今日缓存，可反复执行用于对比渲染效果
-    const imagePath = await generateAndGetImage(true, { useMock: true })
-    if (imagePath) {
-      await e.reply(segment.image(imagePath))
+    await e.reply(`🔄 正在生成「模拟日报」（本地示例数据 × ${MOCK_THEMES.length} 套主题，约需一分钟）...`)
+
+    // useMock 只读本地数据、不请求网络，也不写入今日缓存，可反复执行用于对比渲染效果；
+    // 每套主题独立配置副本：标题固定为「模拟日报」，主题逐一轮换
+    let ok = 0
+    for (const [theme, label] of MOCK_THEMES) {
+      try {
+        const mockConfig = { ...config, theme, customTitle: '模拟日报' }
+        const imagePath = await generateDaily(mockConfig, {
+          useMock: true,
+          compress: resolveCompress(mockConfig)
+        })
+        if (imagePath) {
+          ok++
+          await e.reply(segment.image(imagePath))
+        }
+      } catch (err) {
+        logger.error(`[furina-daily] 模拟日报（${label}）生成失败: ${err?.message || err}`)
+      }
+    }
+
+    if (ok > 0) {
+      await e.reply(`✅ 模拟日报已完成（${ok}/${MOCK_THEMES.length} 套主题）`)
     } else {
       await e.reply('❌ 预览日报生成失败，请查看日志。')
     }

@@ -79,56 +79,59 @@ async function buildHelpHtml(logoBase64) {
       name: '基础指令',
       desc: '获取日报及刷新',
       commands: [
-        { cmd: '芙芙日报', desc: '手动获取今天的最新日报（智能缓存）' },
-        { cmd: '日报', desc: '同上，快捷获取日报' },
-        { cmd: '刷新日报', desc: '强制刷新日报，重新抓取最新数据（仅主人）' }
+        { cmd: '芙芙日报', desc: '手动获取今天的最新日报（智能缓存）', icon: 'newspaper' },
+        { cmd: '日报', desc: '同上，快捷获取日报', icon: 'file-text' },
+        { cmd: '刷新日报', desc: '强制刷新日报，重新抓取最新数据（仅主人）', icon: 'refresh' }
       ]
     },
     {
       name: '订阅管理',
       desc: '控制日报自动推送',
       commands: [
-        { cmd: '开启日报推送', desc: '将本群加入每日推送列表' },
-        { cmd: '关闭日报推送', desc: '将本群从推送列表中移除' }
+        { cmd: '开启日报推送', desc: '将本群加入每日推送列表', icon: 'bell-plus' },
+        { cmd: '关闭日报推送', desc: '将本群从推送列表中移除', icon: 'bell-off' }
       ]
     },
     {
       name: '主题与板块',
       desc: '切换主题、热搜板块或侧栏话题（仅主人）',
       commands: [
-        { cmd: '日报主题切换 芙芙蓝色', desc: '使用蓝色默认主题' },
-        { cmd: '日报主题切换 真寻粉色', desc: '使用粉色真寻主题' },
-        { cmd: '日报切换抖音热搜', desc: '下方大图区切换为抖音热搜' },
-        { cmd: '日报切换今日新番', desc: '下方大图区切换为今日新番' },
-        { cmd: '日报切换头条热搜', desc: '下方大图区切换为头条热搜' },
-        { cmd: '日报切换知乎话题榜', desc: '侧栏显示知乎话题榜' },
-        { cmd: '日报切换B站热搜', desc: '侧栏显示哔哩哔哩热搜' }
+        { cmd: '日报主题切换 芙芙蓝色', desc: '使用蓝色默认主题', icon: 'palette' },
+        { cmd: '日报主题切换 真寻粉色', desc: '使用粉色真寻主题', icon: 'paintbrush' },
+        { cmd: '日报主题切换 霜笺白鹭', desc: '使用浅蓝白清冷主题', icon: 'feather' },
+        { cmd: '日报主题切换 绿野青穗', desc: '使用绿色清新主题', icon: 'sprout' },
+        { cmd: '日报主题切换 素白简讯', desc: '使用纯白极简主题', icon: 'feather' },
+        { cmd: '日报切换抖音热搜', desc: '下方大图区切换为抖音热搜', icon: 'music' },
+        { cmd: '日报切换今日新番', desc: '下方大图区切换为今日新番', icon: 'tv' },
+        { cmd: '日报切换头条热搜', desc: '下方大图区切换为头条热搜', icon: 'trending' },
+        { cmd: '日报切换知乎话题榜', desc: '侧栏显示知乎话题榜', icon: 'message' },
+        { cmd: '日报切换B站热搜', desc: '侧栏显示哔哩哔哩热搜', icon: 'play' }
       ]
     },
     {
       name: '图片与数据',
       desc: '压缩开关、渲染预览与数据源（仅主人）',
       commands: [
-        { cmd: '日报压缩 开/关', desc: '开启或关闭日报图片压缩，不带参数则切换' },
-        { cmd: '日报模拟', desc: '用本地示例数据出一份日报，预览渲染效果（不联网）' },
-        { cmd: '日报数据源', desc: '查看各模块当前实际使用的 API 地址' }
+        { cmd: '日报压缩 开/关', desc: '开启或关闭日报图片压缩，不带参数则切换', icon: 'image-down' },
+        { cmd: '日报模拟', desc: '用本地示例数据出一份日报，预览渲染效果（不联网）', icon: 'flask' },
+        { cmd: '日报数据源', desc: '查看各模块当前实际使用的 API 地址', icon: 'server' }
       ]
     },
     {
       name: '高级指令',
       desc: '帮助、更新与配置',
       commands: [
-        { cmd: '日报帮助', desc: '显示本帮助菜单' },
-        { cmd: '日报帮助刷新', desc: '强制刷新本帮助图片' },
-        { cmd: '日报插件更新', desc: '检查并更新插件（仅主人）' },
-        { cmd: '日报清空配置', desc: '备份当前配置并恢复默认设置（仅主人）' }
+        { cmd: '日报帮助', desc: '显示本帮助菜单', icon: 'help' },
+        { cmd: '日报帮助刷新', desc: '强制刷新本帮助图片', icon: 'rotate' },
+        { cmd: '日报插件更新', desc: '检查并更新插件（仅主人）', icon: 'download' },
+        { cmd: '日报清空配置', desc: '备份当前配置并恢复默认设置（仅主人）', icon: 'eraser' }
       ]
     },
     {
       name: '配置说明',
       desc: '可视化配置',
       commands: [
-        { cmd: '锅巴面板', desc: '在 Guoba 插件中管理推送群、时间、主题、API 等设置' }
+        { cmd: '锅巴面板', desc: '在 Guoba 插件中管理推送群、时间、主题、API 等设置', icon: 'settings' }
       ]
     }
   ]
@@ -142,6 +145,7 @@ async function buildHelpHtml(logoBase64) {
       <div class="command-list">
         ${mod.commands.map(cmd => `
           <div class="command-item">
+            <img class="cmd-icon" src="../svg/icon-${cmd.icon}.svg" alt="">
             <code>${escapeHtml(cmd.cmd)}</code>
             <span>${escapeHtml(cmd.desc)}</span>
           </div>
@@ -228,6 +232,12 @@ async function buildHelpHtml(logoBase64) {
     align-items: baseline;
     gap: 10px;
   }
+  .command-item .cmd-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    align-self: center;
+  }
   .command-item code {
     background: #f6f8fa;
     border: 1px solid #d0d7de;
@@ -281,6 +291,9 @@ async function htmlToImageFile(html, outputPath) {
   // 帮助页 body 为 640 宽（600 容器 + 左右 20 padding），2 倍像素输出
   return await renderHtmlToImage(html, outputPath, { scale: 2, width: 640 })
 }
+
+// 导出便于本地渲染验证
+export { buildHelpHtml }
 
 let generating = false
 

@@ -6,7 +6,7 @@
    ======================================== */
 @font-face {
   font-family: 'Content';
-  src: url('../../font/Content.ttf') format('woff2');
+  src: url('../../font/Content.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -130,46 +130,49 @@ body::after {
   text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.7);
 }
 
-/* ================= 日期卡片（柔化白条） ================= */
+/* ================= 日期卡片（三段式：主题色块 / 白带 / 主题色块） ================= */
 .date-card {
-  background: rgba(188, 230, 255, 0.5);
+  background: linear-gradient(145deg, #a8d8f7, #79bce8);
   backdrop-filter: blur(12px);
   padding: 24px 0;                 /* 左右内边距归零，让横条完全贴边 */
   border-radius: 40px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 8px 18px rgba(0, 70, 100, 0.08);
+  border: none;
+  box-shadow: 0 6px 16px rgba(46, 110, 158, 0.16);
   min-width: 280px;
-  flex-shrink: 0;
+  flex-shrink: 0;  font-family: 'Content', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 .date-card .weekday {
-  color: #0a2a3b;
-  font-size: 48px;
+  color: #ffffff;
+  font-size: 62px;
   font-weight: 700;
   line-height: 1.3;
   margin-bottom: 10px;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 0 0 14px rgba(255, 255, 255, 0.55);
 }
 
 .date-card .gregorian {
-  color: #1a4b63;
-  font-size: 32px;
+  color: #ffffff;
+  font-size: 38px;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.65);   /* 半透白，柔和不过亮 */
-  backdrop-filter: blur(8px);               /* 轻微模糊，融入背景 */
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: none;
   padding: 12px 0;
   display: block;
   width: 100%;
   box-sizing: border-box;
-  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 2px 5px rgba(0, 30, 60, 0.15);
 }
 
 .date-card .lunar {
-  color: #2a6a84;
-  font-size: 24px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 32px;
   font-weight: 400;
-  margin-top: 10px;
+  margin: 16px 0 2px;
+  text-shadow: 0 1px 4px rgba(0, 30, 60, 0.15);
 }
 
 /* ================= 其余模块样式（无改动） ================= */
@@ -204,8 +207,9 @@ body::after {
 }
 
 .module-title .icon {
-  width: 36px;
-  height: 36px;
+  width: 1.2em;
+  height: 1.2em;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,12 +233,12 @@ body::after {
 
 .calendar-header .main-date {
   font-weight: 700;
-  font-size: 23px;
+  font-size: calc(23px * var(--fscale, 1));
   color: #0a2a3b;
 }
 
 .calendar-header .lunar-detail {
-  font-size: 17px;
+  font-size: calc(17px * var(--fscale, 1));
   color: #1a4b63;
   margin-top: 6px;
 }
@@ -251,7 +255,7 @@ body::after {
   border-left: 4px solid #d4af37;
   font-weight: 500;
   backdrop-filter: blur(4px);
-  font-size: 16px;
+  font-size: calc(16px * var(--fscale, 1));
 }
 
 .countdown-list {
@@ -265,7 +269,7 @@ body::after {
   /* 与其它板块列表行（.hot-item）的 8px 起点统一 */
   padding: 10px 8px;
   border-bottom: 1px solid rgba(136, 205, 246, 0.25);
-  font-size: 19px;
+  font-size: calc(19px * var(--fscale, 1));
   color: #0a2a3b;
 }
 
@@ -312,7 +316,7 @@ body::after {
   backdrop-filter: blur(5px);
   border: 1px solid rgba(136, 205, 246, 0.5);
   color: #0a2a3b;
-  font-size: 18px;
+  font-size: calc(18px * var(--fscale, 1));
 }
 
 .next-payday-box div {
@@ -342,7 +346,7 @@ body::after {
 .hot-tag {
   background: linear-gradient(145deg, #88CDF6, #5fa9d6);
   color: white;
-  font-size: 16px;
+  font-size: calc(16px * var(--fscale, 1));
   padding: 4px 14px;
   border-radius: 30px;
   font-weight: 600;
@@ -353,7 +357,7 @@ body::after {
 .hot-title {
   flex: 1;
   color: #0a2a3b;
-  font-size: 19px;
+  font-size: calc(19px * var(--fscale, 1));
   line-height: 1.45;
   font-weight: 500;
 }
@@ -424,14 +428,14 @@ body::after {
   justify-content: center;
   font-weight: bold;
   color: #0a2a3b;
-  font-size: 17px;
+  font-size: calc(17px * var(--fscale, 1));
   border: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 2px 8px rgba(136, 205, 246, 0.3);
   z-index: 2;
 }
 
 .douyin-card .douyin-title {
-  font-size: 18px;
+  font-size: calc(18px * var(--fscale, 1));
   font-weight: 600;
   color: #0a2a3b;
   margin: 6px 0 4px;
@@ -442,7 +446,7 @@ body::after {
 }
 
 .douyin-card .douyin-hot {
-  font-size: 15px;
+  font-size: calc(15px * var(--fscale, 1));
   color: #2a6a84;
   font-weight: 600;
 }
@@ -456,7 +460,7 @@ body::after {
   gap: 16px;
   padding: 8px 6px;
   border-bottom: 1px solid rgba(136, 205, 246, 0.2);
-  font-size: 19px;
+  font-size: calc(19px * var(--fscale, 1));
   color: #0a2a3b;
   line-height: 1.5;
 }
@@ -466,7 +470,7 @@ body::after {
   font-weight: bold;
   flex-shrink: 0;
   text-shadow: 0 0 6px rgba(136, 205, 246, 0.6);
-  font-size: 22px;
+  font-size: calc(22px * var(--fscale, 1));
 }
 
 .single-column {
@@ -486,7 +490,7 @@ body::after {
 
 .generated-time {
   text-align: center;
-  font-size: 24px;
+  font-size: calc(24px * var(--fscale, 1));
   color: #2a6a84;
   padding: 10px 0 6px 0;
   background: transparent;

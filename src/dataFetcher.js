@@ -6,6 +6,7 @@ import { fetchZhihu } from './fetchers/zhihu.js';
 import { fetchBilibiliHot } from './fetchers/bilibili.js';
 import { fetchITNews } from './fetchers/itNews.js';
 import { getDateInfo } from './utils/date.js';
+import { logMark } from './utils/logger.js';
 
 /**
  * 带延迟的函数执行器
@@ -28,7 +29,7 @@ export function resolveSideModule(config = {}) {
 }
 
 export async function fetchAllData(config = {}, options = {}) {
-  console.log('📡 开始获取固定模块数据（新闻、摸鱼、侧栏、IT）...\n');
+  logMark('📡 开始获取固定模块数据（新闻、摸鱼、侧栏、IT）...');
 
   const sideModule = resolveSideModule(config);
 
@@ -50,11 +51,15 @@ export async function fetchAllData(config = {}, options = {}) {
   const sideName = sideModule === 'bilibili' ? '哔哩哔哩热搜' : '知乎话题榜';
   const sideCount = sideModule === 'bilibili' ? bilibiliHot.length : zhihuHot.length;
 
-  console.log('\n📦 固定数据汇总:');
-  console.log(`   - 世界新闻: ${news60s.worldNews.length} 条`);
-  console.log(`   - IT资讯: ${itNews.length} 条`);
-  console.log(`   - ${sideName}: ${sideCount} 条`);
-  console.log(`   - 摸鱼日历: ${moyuData.countdowns.length} 个倒计时\n`);
+  logMark(
+    [
+      '📦 固定数据汇总:',
+      `  - 世界新闻: ${news60s.worldNews.length} 条`,
+      `  - IT资讯: ${itNews.length} 条`,
+      `  - ${sideName}: ${sideCount} 条`,
+      `  - 摸鱼日历: ${moyuData.countdowns.length} 个倒计时`
+    ].join('\n')
+  );
 
   return {
     date: dateInfo,

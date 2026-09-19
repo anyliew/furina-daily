@@ -11,21 +11,21 @@ logoSize: ""
 titleFont: "Title.ttf"
 titleFontSize: ""
 secondaryTitleFont: "Secondary_Title.ttf"
-secondaryTitleFontSize: ""
+secondaryTitleFontSize: ""   # 留空默认 35
 contentFont: "Content.ttf"
+# 正文字号基准（px，默认 25）。按与基准的比值等比缩放正文文字，标题/日历/模块标题不受影响；留空按 25 换算
 contentFontSize: ""
 # 下方热搜板块（抖音热搜 / 今日新番 / 头条热搜）三选一
 hotModule: "douyin"
 # 侧栏话题模块（知乎话题榜 / 哔哩哔哩热搜）二选一
 sideModule: "zhihu"
 # 排版密度倍率（CSS zoom）。注意它会与渲染后端的设备像素倍率相乘：
-# shotium scale:2 时填 1 即为 2 倍图（推荐，清晰且体积小）；填 2 会得到 4 倍图，体积约大 4 倍
+# shotium scale:2 时填 1 为 2 倍图（默认，清晰且体积小）；填 2 为 4 倍图，体积约大 4 倍
 renderScale: 1
-# 图片压缩：compressImage 为 false 时直接输出渲染后端返回的原图；
-# 格式支持 png-none(PNG 无压缩) / png(PNG 无损) / jpeg(JPEG) / webp(WebP)，quality 仅对 jpeg、webp 生效
+# 图片压缩：compressImage 为 false 时直接输出渲染后端返回的原图（不重编码，体积最大）；
+# 格式两种均为无损画质：png(兼容性最好) / webp-lossless(体积再小约 30-40%)
 compressImage: true
 compressFormat: "png"
-compressQuality: 80
 # 各数据源的 API 地址，留空则自动在内置公共实例里挑选可用的
 apiBase:
   viki: "https://60s.viki.moe"
@@ -43,4 +43,5 @@ apiBase:
 # 填了就只走代理、不再回退直连；代理地址不内置在插件里，随时可改可清空。
 proxy:
   bangumi: ""
-theme: "blue"
+# 配色主题：blue（芙芙蓝色）/ pink（真寻粉色）/ lu（霜笺白鹭）/ green（绿野青穗）
+theme: "blue"   # 可选：blue / pink / lu(霜笺白鹭) / green(绿野青穗) / plain(素白简讯)

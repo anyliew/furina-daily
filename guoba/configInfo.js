@@ -42,8 +42,7 @@ export default {
       sideModule: config.sideModule || 'zhihu',
       renderScale: config.renderScale || 1,
       compressImage: config.compressImage !== false && config.compressImage !== 'false',
-      compressFormat: config.compressFormat || 'png',
-      compressQuality: config.compressQuality || 80,
+      compressFormat: ['png', 'webp-lossless'].includes(config.compressFormat) ? config.compressFormat : 'png',
       theme: config.theme || 'blue',
       autoMerge: config.autoMerge !== false
     }
@@ -67,15 +66,14 @@ export default {
       current.titleFont = data.titleFont || 'Title.ttf'
       current.titleFontSize = data.titleFontSize || ''
       current.secondaryTitleFont = data.secondaryTitleFont || 'Secondary_Title.ttf'
-      current.secondaryTitleFontSize = data.secondaryTitleFontSize || ''
+      current.secondaryTitleFontSize = data.secondaryTitleFontSize || '35'
       current.contentFont = data.contentFont || 'Content.ttf'
       current.contentFontSize = data.contentFontSize || ''
       current.hotModule = data.hotModule || 'douyin'
       current.sideModule = data.sideModule || 'zhihu'
       current.renderScale = Number(data.renderScale) || 1
       current.compressImage = data.compressImage ?? true
-      current.compressFormat = data.compressFormat || 'png'
-      current.compressQuality = Number(data.compressQuality) || 80
+      current.compressFormat = ['png', 'webp-lossless'].includes(data.compressFormat) ? data.compressFormat : 'png'
       current.theme = data.theme || 'blue'
       current.autoMerge = data.autoMerge ?? true
 

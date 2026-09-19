@@ -33,8 +33,8 @@
 - **手动获取**：随时获取最新日报，基于日期智能缓存，不重复生成
 - **热搜板块**：下方大图区可切换「抖音热搜 / 今日新番（Bangumi）/ 头条热搜」，锅巴面板或指令随时更换
 - **侧栏话题**：摸鱼日历旁的话题模块二选一 —— 「知乎话题榜」或「哔哩哔哩热搜」
-- **主题切换**：内置「芙芙蓝色」「真寻粉色」双主题，锅巴或指令一键切换
-- **图片压缩**：可开关日报图片压缩，支持 PNG（无压缩）/ PNG（无损）/ JPEG / WebP，JPEG、WebP 可调质量 1-100；指令「日报压缩 开/关」即时切换
+- **主题切换**：内置四主题 ——「芙芙蓝色」「真寻粉色」「霜笺白鹭」（浅蓝白清冷）「绿野青穗」（绿色清新），锅巴或指令一键切换
+- **图片压缩**：可开关日报图片压缩，支持 PNG（无损）/ WebP（无损）两种格式；指令「日报压缩 开/关」即时切换
 - **自定义 API**：新闻、摸鱼、知乎、B站、IT、抖音、头条、新番每个数据源都能单独填 API 地址；请求失败会自动切换到内置公共实例
 - **新番代理（可选）**：今日新番走的 Bangumi API（`api.bgm.tv`）与其图床目前只能境外网络直连。国内可在锅巴「数据源配置 → 新番代理前缀」填一个前缀式代理（如 `https://api.fate.vip/`），**接口请求与封面图会一起走这个通道**；留空即直连，与不加该功能时完全一致。代理地址不内置在插件里，随时可改可清空（填了之后只走代理，不再回退直连）
 - **渲染预览**：指令「日报模拟」读取插件内置的 `resources/mock` 示例数据出一份日报（不联网、不占用今日缓存、可反复执行），用于快速预览主题 / 板块 / 侧栏 / 压缩等渲染效果；同一套示例数据在 API 全部失败时也会自动兜底
@@ -71,20 +71,19 @@ titleFontSize: ''            # 顶部标题字号，空为默认
 secondaryTitleFont: 'Secondary_Title.ttf'
 secondaryTitleFontSize: ''
 contentFont: 'Content.ttf'
-contentFontSize: ''
+contentFontSize: ''          # 正文字号基准（px，默认 19），按比值等比缩放正文
 hotModule: 'douyin'          # 热搜板块：douyin / bangumi / toutiao
 sideModule: 'zhihu'          # 侧栏话题：zhihu / bilibili
-renderScale: 1               # 排版密度倍率（与渲染后端设备像素倍率相乘，shotium scale:2 下填 1 即两倍图）
+renderScale: 1               # 渲染像素倍率（与渲染后端设备像素倍率相乘；填 2 为 4 倍图，体积约大 4 倍）
 compressImage: true          # 是否压缩日报图片
-compressFormat: 'png'        # png-none / png / jpeg / webp
-compressQuality: 80          # 仅 jpeg、webp 生效
+compressFormat: 'png'        # png（无损） / webp-lossless（WebP 无损，体积更小）
 apiBase:
   bangumi: 'https://api.bgm.tv'
   viki: 'https://60s.viki.moe'
 # 新番代理前缀：留空=直连；国内访问不了 Bangumi 时填 https://api.fate.vip/ 这类前缀式代理
 proxy:
   bangumi: ''
-theme: 'blue'                # 主题：blue（芙芙蓝色） / pink（真寻粉色）
+theme: 'blue'                # 主题：blue / pink / lu（霜笺白鹭） / green（绿野青穗） / plain（素白简讯） / lu（霜笺白鹭） / green（绿野青穗）
 ```
 修改后会在几秒内自动重载，无需重启。
 

@@ -73,7 +73,7 @@ export default [
     component: 'Input',
     bottomHelpMessage: '数字（单位 px），留空则使用默认大小。',
     componentProps: {
-      placeholder: '24'
+      placeholder: '35'
     }
   },
   {
@@ -87,11 +87,11 @@ export default [
   },
   {
     field: 'contentFontSize',
-    label: '正文文字字号',
+    label: '正文字号基准',
     component: 'Input',
-    bottomHelpMessage: '数字（单位 px），留空则使用默认大小。',
+    bottomHelpMessage: '正文基准字号（px，默认 25）。按与基准的比值等比缩放全部正文文字（新闻、热搜、倒计时等），顶部标题 / 日历 / 模块标题不受影响。例：填 32 约放大 1.28 倍。',
     componentProps: {
-      placeholder: '18'
+      placeholder: '19'
     }
   },
   {
@@ -102,11 +102,14 @@ export default [
     field: 'theme',
     label: '日报主题',
     component: 'Select',
-    bottomHelpMessage: '选择日报的配色主题。也可用指令「芙芙蓝色 / 真寻粉色」快速切换。',
+    bottomHelpMessage: '选择日报的配色主题。也可用指令「日报主题切换 主题名」快速切换（如：日报主题切换 霜笺白鹭）。',
     componentProps: {
       options: [
         { label: '芙芙蓝色', value: 'blue' },
-        { label: '真寻粉色', value: 'pink' }
+        { label: '真寻粉色', value: 'pink' },
+        { label: '霜笺白鹭', value: 'lu' },
+        { label: '绿野青穗', value: 'green' },
+        { label: '素白简讯', value: 'plain' }
       ]
     }
   }

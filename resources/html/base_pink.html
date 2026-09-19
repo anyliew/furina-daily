@@ -6,6 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ customTitle }}</title>
   <link rel="stylesheet" href="css/daily-pink.css">
+  {# ---- 动态字体配置 ---- #}
+  {% if titleFont or secondaryTitleFont or contentFont %}
+  <style>
+    {% if titleFont %}
+    @font-face {
+      font-family: 'CustomTitleFont';
+      src: url('../font/{{ titleFont }}') format('{{ titleFontFormat }}');
+      font-weight: normal;
+      font-style: normal;
+    }
+    .header h1 { font-family: 'CustomTitleFont', sans-serif; }
+    {% endif %}
+    {% if titleFontSize %}
+    .header h1 { font-size: {{ titleFontSize }}px; }
+    {% endif %}
+
+    {% if secondaryTitleFont %}
+    @font-face {
+      font-family: 'CustomSecTitleFont';
+      src: url('../font/{{ secondaryTitleFont }}') format('{{ secondaryTitleFontFormat }}');
+      font-weight: normal;
+      font-style: normal;
+    }
+    .module-title { font-family: 'CustomSecTitleFont', sans-serif; }
+    {% endif %}
+    {% if secondaryTitleFontSize %}
+    .module-title { font-size: {{ secondaryTitleFontSize }}px; }
+    {% endif %}
+
+    {% if contentFont %}
+    @font-face {
+      font-family: 'CustomContentFont';
+      src: url('../font/{{ contentFont }}') format('{{ contentFontFormat }}');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body { font-family: 'CustomContentFont', sans-serif; }
+    {% endif %}
+    {% if contentFontScale %}
+    /* 正文缩放系数：contentFontSize ÷ 19px（基准正文），作用于全部 calc(Npx * var(--fscale)) 的正文元素 */
+    :root { --fscale: {{ contentFontScale }}; }
+    {% endif %}
+  </style>
+  {% endif %}
 </head>
 <body>
 <div class="container">

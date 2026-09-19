@@ -1,13 +1,15 @@
+{# resources/html/base_lu.html — 霜笺白鹭主题 #}
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>芙芙心日报 · 冰晶诗章</title>
-  <link rel="stylesheet" href="css/daily.css">
+  <title>{{ customTitle | default("芙芙心日报") }} · 霜笺白鹭</title>
+  <link rel="stylesheet" href="css/daily-lu.css">
 
-  {# ---- 动态字体配置 ---- #}
+  {# ---- 动态字体配置（与 base.html 保持一致） ---- #}
   {% if titleFont or secondaryTitleFont or contentFont %}
   <style>
-    /* 顶部标题字体 */
     {% if titleFont %}
     @font-face {
       font-family: 'CustomTitleFont';
@@ -20,8 +22,6 @@
     {% if titleFontSize %}
     .header h1 { font-size: {{ titleFontSize }}px; }
     {% endif %}
-
-    /* 内容标题字体（模块标题） */
     {% if secondaryTitleFont %}
     @font-face {
       font-family: 'CustomSecTitleFont';
@@ -34,8 +34,6 @@
     {% if secondaryTitleFontSize %}
     .module-title { font-size: {{ secondaryTitleFontSize }}px; }
     {% endif %}
-
-    /* 正文内容字体 */
     {% if contentFont %}
     @font-face {
       font-family: 'CustomContentFont';
@@ -52,3 +50,28 @@
   </style>
   {% endif %}
 </head>
+<body>
+<div class="container">
+  {% include "partials/header.html" %}
+  <div class="two-columns">
+    {% include "partials/moyu.html" %}
+    {% if sideModule == 'bilibili' %}
+      {% include "partials/bilibili.html" %}
+    {% else %}
+      {% include "partials/zhihu.html" %}
+    {% endif %}
+  </div>
+  <div class="single-column">
+    {% if isBangumi %}
+      {% include "partials/bangumi.html" %}
+    {% elif isToutiao %}
+      {% include "partials/toutiao.html" %}
+    {% else %}
+      {% include "partials/douyin.html" %}
+    {% endif %}
+    {% include "partials/news.html" %}
+  </div>
+  {% include "partials/footer.html" %}
+</div>
+</body>
+</html>
