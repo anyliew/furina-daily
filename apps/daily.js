@@ -7,6 +7,8 @@ import Config from './config.js'
 import { generateDaily, closeBrowser, resolveCompress, compressFormatLabel } from '../src/index.js'
 import { getMockStatus } from '../src/mock/store.js'
 import { getCurrentBase } from '../src/utils/apiBase.js'
+import { notifyMaster } from '../src/utils/notify.js'
+import { getStats } from '../src/utils/dataStatus.js'
 
 const { default: Plugin } = await import('../../../lib/plugins/plugin.js')
 
@@ -37,6 +39,22 @@ let isGenerating = false
 
 let cachedImagePath = null
 let cachedDate = ''
+
+/** 定时刷新缓存的连续失败/降级计数：连续 2 次才升级为告警（单次抖动不打扰主人） */
+let refreshFailStreak = 0
+
+/** 生成成功但存在降级模块时，私聊告警主人（告警模块自带冷却去重） */
+async function notifyDegradedIfNeeded(source) {
+  const stats = getStats()
+  if (stats.level !== 'degraded') return
+  const names = stats.degraded.map(d => d.name).join('、')
+  await notifyMaster({
+    level: 'degraded',
+    source,
+    message: `日报已正常生成，但部分模块降级为示例数据：${names}`,
+    extraLines: stats.degraded.map(d => `${d.name}: ${d.detail || '数据源不可用'}`)
+  })
+}
 
 /** 配置变更后让「今日缓存」失效，确保下次手动/定时生成时用新配置出图（否则会一直返回当天旧图） */
 function invalidateDailyCache() {
@@ -119,7 +137,9 @@ async function generateAndGetImage(forceRefresh = false, options = {}) {
     return imagePath
   } catch (err) {
     logger.error(`[furina-daily] 生成失败: ${err.message}`)
-    return null
+    // 带 stage 的错误向上抛给触发方（命令 / 定时任务），由其决定群提示与私聊告警
+    err.stage = err.stage || 'fetch'
+    throw err
   } finally {
     isGenerating = false
   }
@@ -140,8 +160,20 @@ async function sendImageToSession(session, imagePath) {
   }
 }
 
-async function sendDailyToAll() {
-  const imagePath = await generateAndGetImage()
+async function sendDailyToAll(sourceDesc = '定时推送') {
+  let imagePath
+  try {
+    imagePath = await generateAndGetImage()
+  } catch (err) {
+    // 定时推送失败：群内静默，私聊告警主人
+    await notifyMaster({
+      level: 'fatal',
+      source: sourceDesc,
+      message: `日报生成失败，本次未推送（影响 ${Array.isArray(config.reportGroup) ? config.reportGroup.length : 0} 个推送群）: ${err.message}`,
+      stack: err.stack
+    })
+    return
+  }
   if (!imagePath) return
   const bot = Bot
   const groups = Array.isArray(config.reportGroup) ? config.reportGroup : []
@@ -159,6 +191,7 @@ async function sendDailyToAll() {
       logger.error(`[furina-daily] 发送失败群 ${groupId}: ${err.message}`)
     }
   }
+  await notifyDegradedIfNeeded(sourceDesc)
 }
 
 export function scheduleTasks() {
@@ -169,11 +202,11 @@ export function scheduleTasks() {
 
   morningJob = schedule.scheduleJob(config.morningTime, async () => {
     logger.mark(`[furina-daily] 早间推送 (${config.morningTime})`)
-    await sendDailyToAll()
+    await sendDailyToAll(`定时任务 早间推送 ${config.morningTime}`)
   })
   eveningJob = schedule.scheduleJob(config.eveningTime, async () => {
     logger.mark(`[furina-daily] 晚间推送 (${config.eveningTime})`)
-    await sendDailyToAll()
+    await sendDailyToAll(`定时任务 晚间推送 ${config.eveningTime}`)
   })
 
   const refreshTimes = [
@@ -185,7 +218,27 @@ export function scheduleTasks() {
   refreshTimes.forEach(({ cron, desc }) => {
     const job = schedule.scheduleJob(cron, async () => {
       logger.mark(`[furina-daily] ${desc} 刷新缓存`)
-      await generateAndGetImage(true)
+      // 定时刷新失败不立即告警（下次会自动重试），连续 2 次失败/降级才私聊主人
+      try {
+        const imagePath = await generateAndGetImage(true)
+        if (imagePath && getStats().level === 'degraded') {
+          refreshFailStreak++
+          if (refreshFailStreak >= 2) await notifyDegradedIfNeeded(`定时刷新缓存 ${desc}`)
+        } else {
+          refreshFailStreak = 0
+        }
+      } catch (err) {
+        refreshFailStreak++
+        logger.error(`[furina-daily] ${desc} 刷新缓存失败（连续第 ${refreshFailStreak} 次）: ${err.message}`)
+        if (refreshFailStreak >= 2) {
+          await notifyMaster({
+            level: 'fatal',
+            source: `定时刷新缓存 ${desc}`,
+            message: `连续 ${refreshFailStreak} 次生成失败: ${err.message}`,
+            stack: err.stack
+          })
+        }
+      }
     })
     refreshJobs.push(job)
   })
@@ -248,11 +301,26 @@ export default class furinaDaily extends Plugin {
 
   async manualDaily(e) {
     logger.debug(`[furina-daily] 手动获取日报 by ${e.user_id}`)
-    const imagePath = await generateAndGetImage()
-    if (imagePath) {
-      await sendImageToSession(e, imagePath)
-    } else {
-      await e.reply("❌ 日报生成失败。")
+    try {
+      const imagePath = await generateAndGetImage()
+      if (imagePath) {
+        await sendImageToSession(e, imagePath)
+        await notifyDegradedIfNeeded(`命令触发（${e.group_id ? `群 ${e.group_id}` : '私聊'}）`)
+      } else {
+        await e.reply("❌ 日报生成失败。")
+      }
+    } catch (err) {
+      const stage = err.stage || '生成'
+      logger.error(`[furina-daily] 手动获取日报失败: ${err.message}`)
+      const sent = await notifyMaster({
+        level: 'fatal',
+        source: `命令触发（${e.group_id ? `群 ${e.group_id}` : '私聊'}）`,
+        message: `${stage}阶段出错: ${err.message}`,
+        stack: err.stack
+      })
+      await e.reply(sent
+        ? `❌ 日报生成失败：${stage}阶段出错，详情已私聊主人`
+        : `❌ 日报生成失败：${stage}阶段出错`)
     }
   }
 
@@ -263,11 +331,24 @@ export default class furinaDaily extends Plugin {
     }
     logger.debug(`[furina-daily] 刷新日报 by ${e.user_id}`)
     await e.reply("🔄 正在刷新日报...")
-    const imagePath = await generateAndGetImage(true)
-    if (imagePath) {
+    const source = `命令触发（${e.group_id ? `群 ${e.group_id}` : '私聊'}）`
+    try {
+      const imagePath = await generateAndGetImage(true)
       await e.reply(segment.image(imagePath))
-    } else {
-      await e.reply("❌ 日报刷新失败。")
+      await notifyDegradedIfNeeded(source)
+    } catch (err) {
+      const stage = err.stage || '生成'
+      logger.error(`[furina-daily] 刷新日报失败: ${err.message}`)
+      // 命令触发：用户在群里等着，先群内简短反馈，再私聊详细日志
+      const sent = await notifyMaster({
+        level: 'fatal',
+        source,
+        message: `${stage}阶段出错: ${err.message}`,
+        stack: err.stack
+      })
+      await e.reply(sent
+        ? `❌ 日报生成失败：${stage}阶段出错，详情已私聊主人`
+        : `❌ 日报生成失败：${stage}阶段出错（私聊告警发送失败，详见服务器 logs/error.log）`)
     }
   }
 

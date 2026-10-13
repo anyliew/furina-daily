@@ -9,6 +9,7 @@ import sharp from 'sharp';
 import { fetchAllData, fetchAllMockData, resolveSideModule } from './dataFetcher.js';
 import { fetchDouyinHot } from './fetchers/douyin.js';
 import { fetchToutiao } from './fetchers/toutiao.js';
+import { resetStats, markModule } from './utils/dataStatus.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -370,42 +371,52 @@ export async function generateDaily(config = {}, options = {}) {
     } catch { logoBase64 = ''; }
   }
 
-  // 获取固定模块数据（新闻、摸鱼、侧栏、IT）
-  const baseData = options.useMock
-    ? await fetchAllMockData(config)
-    : await fetchAllData(config);
+  // 数据状态登记：真实数据生成重置，供告警机制读取（模拟预览不影响登记）
+  if (!options.useMock) resetStats();
 
-  // 热搜板块选择（三选一）
-  const hotModule = config.hotModule || 'douyin';
+  // 获取固定模块数据（新闻、摸鱼、侧栏、IT）——错误标记 fetch 阶段
+  let baseData;
   let hotData = null;
   let isBangumi = false;
   let isToutiao = false;
+  try {
+    baseData = options.useMock
+      ? await fetchAllMockData(config)
+      : await fetchAllData(config);
 
-  if (hotModule === 'bangumi') {
-    const mockBangumi = options.useMock ? baseData.bangumiData : null;
-    if (mockBangumi) {
-      hotData = { ...mockBangumi, items: (mockBangumi.items || []).slice(0, 10) };
-      isBangumi = true;
-      log(`📺 今日新番（本地示例数据）: ${hotData.items.length} 部`);
-    } else {
-      try {
-        const { getTodayBangumi } = await import('./fetchers/bangumi.js');
-        hotData = await getTodayBangumi(config);
-        hotData.items = hotData.items.slice(0, 10);
+    // 热搜板块选择（三选一）
+    const hotModule = config.hotModule || 'douyin';
+
+    if (hotModule === 'bangumi') {
+      const mockBangumi = options.useMock ? baseData.bangumiData : null;
+      if (mockBangumi) {
+        hotData = { ...mockBangumi, items: (mockBangumi.items || []).slice(0, 10) };
         isBangumi = true;
-        log(`📺 今日新番获取成功: ${hotData.items.length} 部`);
-      } catch (err) {
-        logError('今日新番获取失败，回退到抖音热搜:', err.message);
-        hotData = await fetchDouyinHot(config);
-        isBangumi = false;
+        log(`📺 今日新番（本地示例数据）: ${hotData.items.length} 部`);
+      } else {
+        try {
+          const { getTodayBangumi } = await import('./fetchers/bangumi.js');
+          hotData = await getTodayBangumi(config);
+          hotData.items = hotData.items.slice(0, 10);
+          isBangumi = true;
+          log(`📺 今日新番获取成功: ${hotData.items.length} 部`);
+        } catch (err) {
+          logError('今日新番获取失败，回退到抖音热搜:', err.message);
+          markModule('bangumi', 'degraded', err.message);
+          hotData = await fetchDouyinHot(config);
+          isBangumi = false;
+        }
       }
+    } else if (hotModule === 'toutiao') {
+      hotData = (options.useMock && baseData.toutiaoHot?.length) ? baseData.toutiaoHot : await fetchToutiao(config);
+      isToutiao = true;
+      log(`📰 头条热搜获取成功: ${hotData.length} 条`);
+    } else {
+      hotData = (options.useMock && baseData.douyinHot?.length) ? baseData.douyinHot : await fetchDouyinHot(config);
     }
-  } else if (hotModule === 'toutiao') {
-    hotData = (options.useMock && baseData.toutiaoHot?.length) ? baseData.toutiaoHot : await fetchToutiao(config);
-    isToutiao = true;
-    log(`📰 头条热搜获取成功: ${hotData.length} 条`);
-  } else {
-    hotData = (options.useMock && baseData.douyinHot?.length) ? baseData.douyinHot : await fetchDouyinHot(config);
+  } catch (err) {
+    err.stage = err.stage || 'fetch';
+    throw err;
   }
 
   const templateData = {
@@ -459,8 +470,13 @@ export async function generateDaily(config = {}, options = {}) {
   const outputPath = path.join(outputDir, `fufu-${nameTag}${timestamp}.png`);
 
   log(`🎨 使用模板: ${templateFile}, 输出: ${outputPath}`);
-  return await screenshotWithRenderer(templateFile, templateData, outputPath, {
-    scale: Number(config.renderScale) > 0 ? Number(config.renderScale) : 1,
-    compress: options.compress || resolveCompress(config)
-  });
+  try {
+    return await screenshotWithRenderer(templateFile, templateData, outputPath, {
+      scale: Number(config.renderScale) > 0 ? Number(config.renderScale) : 1,
+      compress: options.compress || resolveCompress(config)
+    });
+  } catch (err) {
+    err.stage = err.stage || 'render';
+    throw err;
+  }
 }

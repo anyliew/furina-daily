@@ -4,6 +4,7 @@ import { requestWithFallback } from '../utils/apiBase.js';
 import { readMock } from '../mock/store.js';
 import { getMockMoyuData } from '../mock/moyu.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
+import { markModule } from '../utils/dataStatus.js';
 
 export function parseMoyuText(text) {
   const result = {
@@ -110,14 +111,27 @@ export async function fetchMoyuData(config = {}, options = {}) {
         params: { encoding: 'text' },
         headers: HEADERS
       }, 1, 1500);
-      if (typeof res.data === 'string') {
-        logSuccess('摸鱼日历 API (文本)');
-        return parseMoyuText(res.data);
+      // 上游部分实例（如 7se.cn）已改版：忽略 encoding 参数，直接返回 PNG 图片。
+      // 二进制被 axios 读成字符串后 typeof === 'string' 恒真，必须用 content-type 把它拦下来
+      const ctype = String(res.headers?.['content-type'] || '');
+      if (ctype && !ctype.includes('text/')) {
+        throw new Error(`返回非文本格式（${ctype.split(';')[0]}），数据源疑似已改版`);
       }
-      throw new Error('非文本格式');
+      if (typeof res.data !== 'string') {
+        throw new Error('非文本格式');
+      }
+      // 解析结果校验：正文里连日期或倒计时都解析不出来，说明返回的文本不是摸鱼日历
+      // （错误页、图片二进制等），按失败处理走下一个回退源 / mock 兜底
+      const parsed = parseMoyuText(res.data);
+      if (!parsed.date || parsed.countdowns.length === 0) {
+        throw new Error('文本格式异常：未解析出日期或倒计时');
+      }
+      logSuccess('摸鱼日历 API (文本)');
+      return parsed;
     });
   } catch (e) {
     logger.error(`[furina-daily] 摸鱼日历 API 请求失败: ${e.message}`);
+    markModule('moyu', 'degraded', e.message);
     if (e.code) logger.error(`错误代码: ${e.code}`);
     if (options.useMock === false) throw e;
     const saved = await readMock('moyu');

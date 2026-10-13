@@ -4,6 +4,7 @@ import { requestWithFallback } from '../utils/apiBase.js';
 import { readMock } from '../mock/store.js';
 import { getMockZhihu } from '../mock/zhihu.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
+import { markModule } from '../utils/dataStatus.js';
 
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -32,6 +33,7 @@ export async function fetchZhihu(config = {}, options = {}) {
     });
   } catch (e) {
     logger.error(`[furina-daily] 知乎话题榜 API 请求失败: ${e.message}`);
+    markModule('zhihu', 'degraded', e.message);
     if (e.code) logger.error(`错误代码: ${e.code}`);
     if (options.useMock === false) throw e;
     const saved = await readMock('zhihu');

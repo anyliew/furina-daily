@@ -6,6 +6,8 @@
 
 const trimSlash = (s) => String(s || '').trim().replace(/\/+$/, '');
 
+import { markModule } from './dataStatus.js';
+
 /** B站热搜可用实例：主域 60s.viki.moe 的 /v2/bili 长期返回 500，故单独一池 */
 const BILI_POOL = [
   'https://60s.7se.cn',
@@ -152,6 +154,7 @@ export async function requestWithFallback(config, module, handler) {
     try {
       const result = await handler(base);
       rememberBase(module, base);
+      markModule(module, 'ok');
       return result;
     } catch (err) {
       lastErr = err;

@@ -3,6 +3,7 @@ import { getWithRetry } from '../utils/retry.js';
 import { requestWithFallback } from '../utils/apiBase.js';
 import { readMock } from '../mock/store.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
+import { markModule } from '../utils/dataStatus.js';
 import { getMockToutiao } from '../mock/toutiao.js';
 
 function formatHotValue(value) {
@@ -40,6 +41,7 @@ export async function fetchToutiao(config = {}, options = {}) {
     });
   } catch (e) {
     logger.error(`[furina-daily] 头条热搜 API 请求失败: ${e.message}`);
+    markModule('toutiao', 'degraded', e.message);
     if (e.code) logger.error(`错误代码: ${e.code}`);
     if (options.useMock === false) throw e;
     const saved = await readMock('toutiao');

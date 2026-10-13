@@ -5,6 +5,7 @@ import { getWithRetry } from '../utils/retry.js';
 import { requestWithFallback } from '../utils/apiBase.js';
 import { readMock } from '../mock/store.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
+import { markModule } from '../utils/dataStatus.js';
 import { getMockBilibiliHot } from '../mock/bilibili.js';
 
 const HEADERS = {
@@ -30,6 +31,7 @@ export async function fetchBilibiliHot(config = {}, options = {}) {
     });
   } catch (e) {
     logger.error(`[furina-daily] 哔哩哔哩热搜 API 请求失败: ${e.message}`);
+    markModule('bilibili', 'degraded', e.message);
     if (e.code) logger.error(`错误代码: ${e.code}`);
     if (options.useMock === false) throw e;
     const saved = await readMock('bilibili');

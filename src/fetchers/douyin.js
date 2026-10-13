@@ -4,6 +4,7 @@ import { requestWithFallback } from '../utils/apiBase.js';
 import { readMock } from '../mock/store.js';
 import { formatHotValue } from '../utils/format.js';
 import { logSuccess, logFailure } from '../utils/logger.js';
+import { markModule } from '../utils/dataStatus.js';
 import { getMockDouyinHot } from '../mock/douyin.js';
 
 const HEADERS = {
@@ -30,6 +31,7 @@ export async function fetchDouyinHot(config = {}, options = {}) {
     });
   } catch (e) {
     logger.error(`[furina-daily] 抖音热搜 API 请求失败: ${e.message}`);
+    markModule('douyin', 'degraded', e.message);
     if (e.code) logger.error(`错误代码: ${e.code}`);
     if (options.useMock === false) throw e;
     const saved = await readMock('douyin');
