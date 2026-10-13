@@ -44,6 +44,9 @@ let cachedDate = ''
 let refreshFailStreak = 0
 
 /** 生成成功但存在降级模块时，私聊告警主人（告警模块自带冷却去重） */
+/** 生成失败的阶段标记 → 中文文案（err.stage 由 src/index.js 抛出时附带） */
+const stageLabel = (stage) => ({ fetch: '数据获取', render: '渲染' }[stage] || '生成')
+
 async function notifyDegradedIfNeeded(source) {
   const stats = getStats()
   if (stats.level !== 'degraded') return
@@ -303,14 +306,14 @@ export default class furinaDaily extends Plugin {
     logger.debug(`[furina-daily] 手动获取日报 by ${e.user_id}`)
     try {
       const imagePath = await generateAndGetImage()
-      if (imagePath) {
-        await sendImageToSession(e, imagePath)
-        await notifyDegradedIfNeeded(`命令触发（${e.group_id ? `群 ${e.group_id}` : '私聊'}）`)
-      } else {
-        await e.reply("❌ 日报生成失败。")
+      if (!imagePath) {
+        await e.reply("⏳ 日报正在生成中，请稍后再试。")
+        return true
       }
+      await sendImageToSession(e, imagePath)
+      await notifyDegradedIfNeeded(`命令触发（${e.group_id ? `群 ${e.group_id}` : '私聊'}）`)
     } catch (err) {
-      const stage = err.stage || '生成'
+      const stage = stageLabel(err.stage)
       logger.error(`[furina-daily] 手动获取日报失败: ${err.message}`)
       const sent = await notifyMaster({
         level: 'fatal',
@@ -334,10 +337,15 @@ export default class furinaDaily extends Plugin {
     const source = `命令触发（${e.group_id ? `群 ${e.group_id}` : '私聊'}）`
     try {
       const imagePath = await generateAndGetImage(true)
+      if (!imagePath) {
+        // null = 已有生成任务进行中被跳过（错误会走 throw 分支）
+        await e.reply("⏳ 日报正在生成中，请稍后再试。")
+        return true
+      }
       await e.reply(segment.image(imagePath))
       await notifyDegradedIfNeeded(source)
     } catch (err) {
-      const stage = err.stage || '生成'
+      const stage = stageLabel(err.stage)
       logger.error(`[furina-daily] 刷新日报失败: ${err.message}`)
       // 命令触发：用户在群里等着，先群内简短反馈，再私聊详细日志
       const sent = await notifyMaster({
