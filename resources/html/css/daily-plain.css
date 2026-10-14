@@ -219,6 +219,8 @@ body {
 
 .countdown-list {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .countdown-item {
@@ -226,7 +228,7 @@ body {
   justify-content: space-between;
   align-items: center;
   /* 与其它板块列表行（.hot-item）的 8px 起点统一 */
-  padding: 10px 8px;
+  padding: 10px 8px 10px 16px;
   border-bottom: 1px solid #e5e7eb;
   font-size: calc(19px * var(--fscale, 1));
   color: #374151;
@@ -246,7 +248,7 @@ body {
   background: #f3f4f6;
   /* 不再向左右突出：背景块与日历头部 / 带薪盒的卡片左缘对齐，文字与普通行同列 */
   margin: 6px 0;
-  padding: 10px 8px;
+  padding: 10px 8px 10px 16px;
   border-radius: 20px;
   border-bottom: none;
   border: 1px solid #d1d5db;
