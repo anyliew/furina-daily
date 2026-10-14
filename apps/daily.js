@@ -139,7 +139,9 @@ async function generateAndGetImage(forceRefresh = false, options = {}) {
     cachedDate = today
     return imagePath
   } catch (err) {
-    logger.error(`[furina-daily] 生成失败: ${err.message}`)
+    // 带阶段与堆栈定位（前 3 行）落 error.log，方便一眼看到出错代码位置
+    const stackHead = String(err.stack || '').split('\n').slice(1, 4).join('\n')
+    logger.error(`[furina-daily] 生成失败[${stageLabel(err.stage)}阶段]: ${err.message}\n${stackHead}`)
     // 带 stage 的错误向上抛给触发方（命令 / 定时任务），由其决定群提示与私聊告警
     err.stage = err.stage || 'fetch'
     throw err

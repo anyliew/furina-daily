@@ -379,14 +379,14 @@ export async function generateDaily(config = {}, options = {}) {
   let hotData = null;
   let isBangumi = false;
   let isToutiao = false;
+  // 注意：hotModule 在下方 templateData 中也有引用，必须声明在 try 块外（块级作用域）
+  const hotModule = config.hotModule || 'douyin';
   try {
     baseData = options.useMock
       ? await fetchAllMockData(config)
       : await fetchAllData(config);
 
     // 热搜板块选择（三选一）
-    const hotModule = config.hotModule || 'douyin';
-
     if (hotModule === 'bangumi') {
       const mockBangumi = options.useMock ? baseData.bangumiData : null;
       if (mockBangumi) {
